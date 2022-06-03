@@ -1,0 +1,25 @@
+#设置环境处理命令
+#将sd卡中的Image文件加载到ddr内存的kernel_addr_r位置处，并使用booti启动。
+#第一个参数为linux内核在ddr中的地址，
+# - 省略的第二个参数为initramfs(传入uRamdisk)在ddr中的地址{详细说明见https://docs.kernel.org/admin-guide/initrd.html}，
+# 第三个参数为设备树在ddr中的地址(u-boot已自带rpi4b的设备树，并在u-boot启动的时候自动加载到${fdt_addr}处，dts源代码地址:树莓派linux仓库的 linux/arch/arm/boot/dts/bcm2711-rpi-4-b.dts
+env set bootcmd "fatload mmc 0:1 ${kernel_addr_r} Image; booti ${kernel_addr_r} - ${fdt_addr}"
+
+#设置环境变量
+#8250.nr_uarts=1 用于打印内核的启动信息
+#console=ttyS0,115200 重定位到ttyS0，115200波特率
+#root=/dev/mmcblk0p2 定义根文件系统位置(可以在sd卡(mmcblk0)里面建立个ext4 分区2(p2)，写入根文件系统
+#init=/linuxrc 指定内核态启动哪个用户态的应用程序作为init进程
+#rootfstype=ext4 根文件系统的类型
+
+setenv bootargs 8250.nr_uarts=1 console=ttyS0,115200 root=/dev/mmcblk0p2 rootwait rw init=/linuxrc rootfstype=ext4
+
+#可通过修改config.txt中的配置项 讲硬件串口和软件串口重新映射
+
+#serial 0 硬件串口与蓝牙连接
+
+console=ttyAMA0,115200 
+
+#serial1 软件串口
+
+console=ttyS0,115200
