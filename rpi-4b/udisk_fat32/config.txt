@@ -1,0 +1,42 @@
+# For more options and information see
+# http://rpf.io/configtxt
+# Some settings may impact device functionality. See link above for details
+# xddcore 2022.06.01
+
+# Automatically load overlays for detected DSI displays
+display_auto_detect=1
+
+# Enable DRM VC4 V3D driver
+dtoverlay=vc4-fkms-v3d
+max_framebuffers=2
+
+# Disable compensation for displays with overscan
+disable_overscan=1
+
+[cm4]
+# Enable host mode on the 2711 built-in XHCI USB controller.
+# This line should be removed if the legacy DWC2 controller is required
+# (e.g. for USB device mode) or if USB support is not required.
+otg_mode=1
+
+[all]
+
+[pi4]
+# Run as fast as firmware / board allows
+arm_boost=1
+
+[all]
+#if enable below line,and the sd must have start4x.elf and fixup4x.dat
+start_x=1 
+gpu_mem=128
+hdmi_force_hotplug=1
+hdmi_ignore_edid=0x5000080
+hdmi_group=2
+hdmi_mode=82
+
+# Enable MINI Uart 
+enable_uart=1
+# if compile u-boot use arm64,and run with 64bit mode
+arm_64bit=1
+# specific second stage boot loader is u-boot.
+kernel=u-boot.bin
