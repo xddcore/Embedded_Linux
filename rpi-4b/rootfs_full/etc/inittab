@@ -1,5 +1,6 @@
 #This is run first except when booting in single-user mode.
-::sysinit:/etc/init.d/rcS
+#use software uart,avoid //bin.sh:can't access tty: job control turned off(such as ctrl+c)
+ttyS0::sysinit:/etc/init.d/rcS
 #/bin/sh invocations on delected ttys
 ::respawn:~/bin/sh
 #Start an "askfirst" shell on the console(whatever that may be)
@@ -7,6 +8,5 @@
 #Stuff to do when restartsing the init process
 ::restart:/sbin/init
 #Stuff to do before rebooting
-::ctrlatldel::/sbin/reboot
-
+::ctrlaltdel:/sbin/reboot
 ::shutdown:/sbin/swapoff -a
