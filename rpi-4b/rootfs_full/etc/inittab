@@ -2,7 +2,7 @@
 #use software uart,avoid //bin.sh:can't access tty: job control turned off(such as ctrl+c)
 ::sysinit:/etc/init.d/rcS
 #/bin/sh invocations on delected ttys
-ttyS0::respawn:~/bin/sh
+::respawn:~/bin/sh
 #Start an "askfirst" shell on the console(whatever that may be)
 #use software uart,avoid //bin.sh:can't access tty: job control turned off(such as ctrl+c)
 ::askfirst:~/bin/sh
