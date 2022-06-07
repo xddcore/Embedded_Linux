@@ -21,3 +21,7 @@ sudo env PATH=$PATH make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD
 sudo env PATH=$PATH make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- INSTALL_MOD_PATH=$(此处改为你要安装的位置，后面再搬到SD卡EXT4分区的/lib/modules/就行) modules_install
 4.至此保证了服务器上用于交叉编译的内核源码版本和树莓派内部内核版本相同。
 5.开始进行驱动开发。
+
+PS:
+1. 本教程中所用的内核5.15.44-V8+，发行版 ubuntu22.04，在执行完如上操作后。内核已被成功替换。开机后会提示firefox，snap store等挂载失败。蓝牙设备无法找到。不过不打算深究了，树莓派上的内核版本只要和交叉编译的内核版本相同即可开始内核开发。
+2. 为什么在linux驱动开发中rootfs要用发行版，而不继续之前的busybox。原因:busybox里面东西比较少，像apt之类的都是没有的。产品发布后，用busybox可以极大程度减少成本。不过在驱动开发调试过程中，用发行版还是比较香的。最后也方便快速得到一个.ko(对于驱动开发者来说)。
