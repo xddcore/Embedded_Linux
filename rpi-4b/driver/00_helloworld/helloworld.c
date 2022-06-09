@@ -4,7 +4,7 @@
  * @LastEditors: xddcore 1034029664@qq.com
  * @LastEditTime: 2022-06-09 19:40:19
  * @FilePath: /rpi-linux/rpi_4b_drivers/00_helloworld/helloworld.c
- * @Description: 
+ * @Description: helloword字符驱动设备框架
  * 
  * Copyright (c) 2022 by xddcore 1034029664@qq.com, All Rights Reserved. 
  */
