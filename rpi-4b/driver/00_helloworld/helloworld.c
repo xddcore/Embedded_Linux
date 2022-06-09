@@ -1,5 +1,17 @@
+/*
+ * @Author: xddcore 1034029664@qq.com
+ * @Date: 2022-06-06 22:53:35
+ * @LastEditors: xddcore 1034029664@qq.com
+ * @LastEditTime: 2022-06-09 19:40:19
+ * @FilePath: /rpi-linux/rpi_4b_drivers/00_helloworld/helloworld.c
+ * @Description: 
+ * 
+ * Copyright (c) 2022 by xddcore 1034029664@qq.com, All Rights Reserved. 
+ */
+
 #include <linux/init.h>
 #include <linux/module.h>
+
 
 static int __init hello_init(void)
 {

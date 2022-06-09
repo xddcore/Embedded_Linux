@@ -1,0 +1,10 @@
+make: Entering directory '/home/xdd/xddcore/Embedded_Linux/rpi-4b/driver/00_helloworld'
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -C /home/xdd/xddcore/rpi-linux/rpi-linux M=`pwd` modules
+echo 00_helloworld 
+cd /home/xdd/xddcore/Embedded_Linux/rpi-4b/driver && mkdir -p 00_helloworld  
+cp `pwd`/helloworld.ko  /home/xdd/xddcore/Embedded_Linux/rpi-4b/driver/00_helloworld 
+cp `pwd`/helloworld.c  /home/xdd/xddcore/Embedded_Linux/rpi-4b/driver/00_helloworld 
+cp `pwd`/helloworld.o  /home/xdd/xddcore/Embedded_Linux/rpi-4b/driver/00_helloworld 
+cp `pwd`/Makefile  /home/xdd/xddcore/Embedded_Linux/rpi-4b/driver/00_helloworld 
+make: Leaving directory '/home/xdd/xddcore/Embedded_Linux/rpi-4b/driver/00_helloworld'
+ 
