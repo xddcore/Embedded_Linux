@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-11 19:35:07
+ * @LastEditTime: 2022-06-11 19:40:34
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  */
@@ -91,8 +91,9 @@ static int __init XGPIO_Init(void)
     }
     printk(KERN_INFO "XGPIO: Register Device Success! Device Major = %d.\n", dev_major);
     //在虚拟内存中申请GPIO寄存器组的空间
-    if(NULL == request_mem_region(XGPIO_Registerx_Base, sizeof(XGPIO_Registerx), XGPIO_Registerx_Name))
+    if(!request_mem_region(XGPIO_Registerx_Base, sizeof(XGPIO_Registerx), XGPIO_Registerx_Name))
     {
+        printk(KERN_ERR "XGPIO: Physical Address Region Malloc Fail!\n");
         return -EINVAL;
     }
     //动态映射GPIO寄存器组
