@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-11 20:03:43
+ * @LastEditTime: 2022-06-11 20:24:56
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  */
@@ -18,7 +18,9 @@
 int dev_major;//设备号
 /**************************************************************/
 #define XGPIO_Registerx_Name "XGPIO_Registerx"
-#define XGPIO_Registerx_Base 0x7e200000 //GPIO寄存器组基地址
+//arm为内存和io统一编址，下面这个地址为rpi4-bcm2711的映射方式。
+//不同的芯片可使用 cat /proc/iomem | grep gpio@ 进行查询
+#define XGPIO_Registerx_Base 0xfe200000 //GPIO寄存器组基地址
 /**
  * @description: GPIO寄存器表(BCM2711|RPI-4b)
  * @return {*}
