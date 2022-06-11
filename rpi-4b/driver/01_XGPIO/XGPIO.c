@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-11 20:24:56
+ * @LastEditTime: 2022-06-11 20:43:16
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  */
@@ -105,7 +105,7 @@ static int __init XGPIO_Init(void)
     }
     //动态映射GPIO寄存器组
     pXGPIO_Registerx = ioremap(XGPIO_Registerx_Base, sizeof(XGPIO_Registerx));
-    printk(KERN_INFO "XGPIO: XGPIO Success!\n");
+    printk(KERN_INFO "XGPIO: XGPIO Register Success!\n");
     return 0;
 }
 
