@@ -1,8 +1,8 @@
 /*
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
- * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-11 20:43:16
+ * @LastEditors: Chengsen Dong 1034029664@qq.com
+ * @LastEditTime: 2022-06-11 13:53:01
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  */
@@ -72,6 +72,12 @@ typedef struct{
 
 XGPIO_Registerx * pXGPIO_Registerx;//XGPIO_Registerx的指针
 
+#define GPIO_NUMBER 57 //可操作的GPIO数量
+//每个GPIO可以进行的操作
+//struct {
+
+    
+//}XGPIO_Operationx[GPIO_NUMBER];
 /**************************************************************/
 static const struct file_operations module_fops={
     .owner = THIS_MODULE,
@@ -97,11 +103,11 @@ static int __init XGPIO_Init(void)
     {
         //仅检查物理内存区域是否已经被其他应用程序使用，不会进行映射操作。(linux的保护机制)
         //对于rpi官方镜像来说，如果使用默认config编译镜像，则gpio驱动会在机器启动时注册这个区域
-        //我们可以将下方return -EINVA；注释，绕过这个检查。（前提是我们再也不会用官方的gpio驱动来干活，否则会打架）。
+        //我们可以将下方return -EFAULT；注释，绕过这个检查。（前提是我们再也不会用官方的gpio驱动来干活，否则会打架）。
         //可行性来自于ioremap()的调用没有物理内存空间名检查
         printk(KERN_ERR "XGPIO: Physical Address Region Malloc Check Fail!\n");
         printk(KERN_ERR "XGPIO: XGPIO Will ignore it! Please DON'T Use offical GPIO Driver in feature!\n");
-        //return -EINVAL;
+        //return -EFAULT;
     }
     //动态映射GPIO寄存器组
     pXGPIO_Registerx = ioremap(XGPIO_Registerx_Base, sizeof(XGPIO_Registerx));
