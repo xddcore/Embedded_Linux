@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-11 13:53:01
+ * @LastEditTime: 2022-06-12 07:01:49
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  */
@@ -72,12 +72,82 @@ typedef struct{
 
 XGPIO_Registerx * pXGPIO_Registerx;//XGPIO_Registerx的指针
 
-#define GPIO_NUMBER 57 //可操作的GPIO数量
+#define GPIO_NUMBER 27 //可操作的GPIO数量 BCM2711有57个gpio，不过40PIN引脚引出了29个,除去id_sd&idsc还有27
+//可以操作GPIO对象
+typedef struct{
+    const char * gpio_name;
+    const unsigned int gpio_id;
+} XGPIO_N[];
+XGPIO_N XGPIO_Nx[GPIO_NUMBER]={
+    {"gpio2", 2},
+    {"gpio3", 3},
+    {"gpio4", 4},
+    {"gpio14", 14},
+    {"gpio15", 15},
+    {"gpio18", 18},
+    {"gpio17", 17},
+    {"gpio27", 27},
+    {"gpio22", 22},
+    {"gpio23", 23},
+    {"gpio24", 24},
+    {"gpio10", 10},
+    {"gpio9", 9},
+    {"gpio11", 11},
+    {"gpio25", 25},
+    {"gpio8", 8},
+    {"gpio7", 7},
+    //{"id_sd", 0},
+    //{"id_sc", 0},
+    {"gpio5", 5},
+    {"gpio6", 6},
+    {"gpio12", 12},
+    {"gpio13", 13},
+    {"gpio19", 19},
+    {"gpio26", 26},
+    {"gpio16", 16},
+    {"gpio20", 20},
+    {"gpio21", 21},
+};
 //每个GPIO可以进行的操作
-//struct {
+#define OPERATION_NUMBER 5 //支持的方法数量
+struct {
+    const char * operation_name;
+    int (*func)(unsigned int gpio_id,unsigned int operation, unsigned int * result);
+}XGPIO_Operation[];
 
-    
-//}XGPIO_Operationx[GPIO_NUMBER];
+XGPIO_Operation XGPIO_Operationx[OPERATION_NUMBER]={
+    {"inout",XGPIO_Operation_inout},
+    {"pullupdown",XGPIO_Operation_pullupdown},
+    {"setreset",XGPIO_Operation_setreset},
+    {"pinlevel",XGPIO_Operation_pinlevel},
+    {"DEBUG",XGPIO_Operation_DEBUG},
+};
+/**************************************************************/
+//XGPIO输入/输出设置方法
+int XGPIO_Operation_inout(unsigned int gpio_id,unsigned int operation, unsigned int * result)
+{
+
+}
+//XGPIO上拉/下拉设置方法
+int XGPIO_Operation_pullupdown(unsigned int gpio_id,unsigned int operation, unsigned int * result)
+{
+
+}
+//XGPIO电平设置设置方法
+int XGPIO_Operation_setreset(unsigned int gpio_id,unsigned int operation, unsigned int * result)
+{
+
+}
+//XGPIO电平读取方法
+int XGPIO_Operation_pinlevel(unsigned int gpio_id,unsigned int operation, unsigned int * result)
+{
+
+}
+//XGPIODEBUG(打印所有GPIO寄存器)方法
+int XGPIO_Operation_DEBUG(unsigned int gpio_id,unsigned int operation, unsigned int * result)
+{
+
+}
 /**************************************************************/
 static const struct file_operations module_fops={
     .owner = THIS_MODULE,
