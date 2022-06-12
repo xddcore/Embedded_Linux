@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-12 08:44:13
+ * @LastEditTime: 2022-06-12 12:16:07
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  */
@@ -131,6 +131,7 @@ XGPIO_Operation XGPIO_Operationx={
 /**************************************************************/
 //XGPIO_ioctl 为用户态的应用程序提供直接访问物理地址的接口
 //更大的io需求，例如访问显存之类的，还可以使用mmap内存映射实现
+unsigned int * pioctl_address;//通过ioctl访问的虚拟内存
 int XGPIO_ioctl(unsigned int address, unsigned long value)
 {
     //ioremap 将物理地址映射到虚拟地址
@@ -139,7 +140,8 @@ int XGPIO_ioctl(unsigned int address, unsigned long value)
     {
         return -1;//访问超出GPIO物理地址区域，错误
     }
-    iowrite32(value,ioremap(address,4));
+    pioctl_address = ioremap(address,sizeof(address));
+    iowrite32(value,pioctl_address);
     return 0;
 }
 long XGPIO_IOCTL(struct file * filp, unsigned int address, unsigned long value)
@@ -224,6 +226,8 @@ static void __exit XGPIO_Exit(void)
     printk(KERN_INFO "XGPIO: XGPIO Begin Release.\n");
     //解除GPIO寄存器组映射
     iounmap(pXGPIO_Registerx);
+    //解除ioctl的访问物理address的虚拟内存映射
+    iounmap(pioctl_address);
     //释放虚拟内存中的空间
     release_mem_region(XGPIO_Registerx_Base,sizeof(XGPIO_Registerx));
     //注销字符设备
