@@ -1,8 +1,8 @@
 /*
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
- * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-12 14:18:46
+ * @LastEditors: Chengsen Dong 1034029664@qq.com
+ * @LastEditTime: 2022-06-12 07:45:12
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  */
@@ -122,13 +122,40 @@ typedef struct {
 }XGPIO_Operation[OPERATION_NUMBER];
 
 XGPIO_Operation XGPIO_Operationx={
-    {"inout",XGPIO_Operation_inout},
-    {"pullupdown",XGPIO_Operation_pullupdown},
-    {"setreset",XGPIO_Operation_setreset},
-    {"pinlevel",XGPIO_Operation_pinlevel},
-    {"DEBUG",XGPIO_Operation_DEBUG},
+    {"inout",XGPIO_Operation_inout}, //cmd = 0
+    {"pullupdown",XGPIO_Operation_pullupdown}, //cmd = 1
+    {"setreset",XGPIO_Operation_setreset}, //cmd = 2
+    {"pinlevel",XGPIO_Operation_pinlevel}, //cmd = 3
+    {"DEBUG",XGPIO_Operation_DEBUG}, //cmd = 4
 };
 /**************************************************************/
+//XGPIO_ioctl
+int XGPIO_ioctl(unsigned int cmd, unsigned int address, unsigned value)
+{
+    //swtich(cmd)
+    //{
+    //    case 0:
+            //if(address)
+    //        iowrite32(value,address);
+    //        break;
+    //}
+    iowrite32(value,address);
+    return 0;
+}
+long XGPIO_IOCTL(struct file * filp, unsigned int cmd, unsigned int address, unsigned int value)
+{
+    int status=0;
+    if(cmd >=0 && cmd<=4)
+    {
+        status = XGPIO_ioctl(cmd, address, value);
+        if(status)return -EFAULT; //执行XGPIO_ioctl失败
+    }
+    else
+    {
+        return -EFAULT;
+    }
+    return 0;
+}
 //XGPIO输入/输出设置方法
 int XGPIO_Operation_inout(unsigned int gpio_id,unsigned int operation, unsigned int * result)
 {
@@ -161,6 +188,7 @@ static const struct file_operations module_fops={
     .release = NULL,
     .write = NULL,
     .read = NULL,
+    .unlocked_ioctl = XGPIO_IOCTL,
 };
 
 static int __init XGPIO_Init(void)
@@ -171,7 +199,7 @@ static int __init XGPIO_Init(void)
     if(dev_major < 0)//无法分配设备号
     {
         printk(KERN_ERR "XGPIO: Register Device Fail!\n");
-        return -EINVAL;
+        return -EFAULT;
     }
     printk(KERN_INFO "XGPIO: Register Device Success! Device Major = %d.\n", dev_major);
     //在虚拟内存中申请GPIO寄存器组的空间（如果失败，则返回NULL指针）
@@ -182,12 +210,12 @@ static int __init XGPIO_Init(void)
         //我们可以将下方return -EFAULT；注释，绕过这个检查。（前提是我们再也不会用官方的gpio驱动来干活，否则会打架）。
         //可行性来自于ioremap()的调用没有物理内存空间名检查
         printk(KERN_ERR "XGPIO: Physical Address Region Malloc Check Fail!\n");
-        printk(KERN_ERR "XGPIO: XGPIO Will ignore it! Please DON'T Use offical GPIO Driver in feature!\n");
+        printk(KERN_ERR "XGPIO: XGPIO Will ignore it! Please DON'T Use offical GPIO Driver in future!\n");
         //return -EFAULT;
     }
     //动态映射GPIO寄存器组
     pXGPIO_Registerx = ioremap(XGPIO_Registerx_Base, sizeof(XGPIO_Registerx));
-    printk(KERN_INFO "XGPIO: XGPIO Register Success!\n");
+    printk(KERN_INFO "XGPIO: XGPIO Register Sucess!\n");
     return 0;
 }
 
