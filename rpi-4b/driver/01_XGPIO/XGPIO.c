@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-12 08:36:50
+ * @LastEditTime: 2022-06-12 08:44:13
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  */
@@ -135,6 +135,10 @@ int XGPIO_ioctl(unsigned int address, unsigned long value)
 {
     //ioremap 将物理地址映射到虚拟地址
     //(在linux中，内核态中的驱动通过将物理地址映射到虚拟地址，实现对io的访问)
+    if(!(address>=XGPIO_Registerx_Base && address <=(XGPIO_Registerx_Base+0xf0)))
+    {
+        return -1;//访问超出GPIO物理地址区域，错误
+    }
     iowrite32(value,ioremap(address,4));
     return 0;
 }
