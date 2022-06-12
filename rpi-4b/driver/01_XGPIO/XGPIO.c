@@ -1,8 +1,8 @@
 /*
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
- * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-12 14:59:36
+ * @LastEditors: Chengsen Dong 1034029664@qq.com
+ * @LastEditTime: 2022-06-12 08:36:50
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  */
@@ -122,23 +122,19 @@ typedef struct {
 }XGPIO_Operation[OPERATION_NUMBER];
 
 XGPIO_Operation XGPIO_Operationx={
-    {"inout",XGPIO_Operation_inout}, //cmd = 0
-    {"pullupdown",XGPIO_Operation_pullupdown}, //cmd = 1
-    {"setreset",XGPIO_Operation_setreset}, //cmd = 2
-    {"pinlevel",XGPIO_Operation_pinlevel}, //cmd = 3
-    {"DEBUG",XGPIO_Operation_DEBUG}, //cmd = 4
+    {"inout",XGPIO_Operation_inout}, 
+    {"pullupdown",XGPIO_Operation_pullupdown}, 
+    {"setreset",XGPIO_Operation_setreset}, 
+    {"pinlevel",XGPIO_Operation_pinlevel}, 
+    {"DEBUG",XGPIO_Operation_DEBUG}, 
 };
 /**************************************************************/
-//XGPIO_ioctl
+//XGPIO_ioctl 为用户态的应用程序提供直接访问物理地址的接口
+//更大的io需求，例如访问显存之类的，还可以使用mmap内存映射实现
 int XGPIO_ioctl(unsigned int address, unsigned long value)
 {
-    //swtich(cmd)
-    //{
-    //    case 0:
-            //if(address)
-    //        iowrite32(value,address);
-    //        break;
-    //}
+    //ioremap 将物理地址映射到虚拟地址
+    //(在linux中，内核态中的驱动通过将物理地址映射到虚拟地址，实现对io的访问)
     iowrite32(value,ioremap(address,4));
     return 0;
 }
