@@ -1,8 +1,8 @@
 /*
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
- * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-12 07:45:12
+ * @LastEditors: xddcore 1034029664@qq.com
+ * @LastEditTime: 2022-06-12 14:59:36
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  */
@@ -130,7 +130,7 @@ XGPIO_Operation XGPIO_Operationx={
 };
 /**************************************************************/
 //XGPIO_ioctl
-int XGPIO_ioctl(unsigned int cmd, unsigned int address, unsigned value)
+int XGPIO_ioctl(unsigned int address, unsigned long value)
 {
     //swtich(cmd)
     //{
@@ -139,15 +139,15 @@ int XGPIO_ioctl(unsigned int cmd, unsigned int address, unsigned value)
     //        iowrite32(value,address);
     //        break;
     //}
-    iowrite32(value,address);
+    iowrite32(value,ioremap(address,4));
     return 0;
 }
-long XGPIO_IOCTL(struct file * filp, unsigned int cmd, unsigned int address, unsigned int value)
+long XGPIO_IOCTL(struct file * filp, unsigned int address, unsigned long value)
 {
     int status=0;
-    if(cmd >=0 && cmd<=4)
+    if(1)
     {
-        status = XGPIO_ioctl(cmd, address, value);
+        status = XGPIO_ioctl(address, value);
         if(status)return -EFAULT; //执行XGPIO_ioctl失败
     }
     else
