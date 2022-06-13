@@ -1,8 +1,8 @@
 /*
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
- * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-14 05:34:12
+ * @LastEditors: Chengsen Dong 1034029664@qq.com
+ * @LastEditTime: 2022-06-13 22:40:49
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -102,7 +102,7 @@ typedef struct {
 typedef struct{
     const char *gpio_name;
     const unsigned int gpio_id;
-    XGPIO_Operationid_Type *pXGPIO_Operationid;
+    XGPIO_Operationid_Type *pXGPIO_Operationid; //编译器对结构体数组指针的识别有bug，所以此处用结构体指针，也能实现功能
     XGPIO_Operation_Type *pXGPIO_Operation;
 } XGPIO_Type;
 
