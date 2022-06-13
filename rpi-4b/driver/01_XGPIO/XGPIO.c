@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-13 21:16:51
+ * @LastEditTime: 2022-06-13 21:25:51
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -164,6 +164,7 @@ XGPIO_Type XGPIO_OBJ={
     {"gpio20", 20, XGPIO_Operationidx, XGPIO_Operationx},
     {"gpio21", 21, XGPIO_Operationidx, XGPIO_Operationx},
 };
+
 /**************************************************************/
 //投机取巧之 使用ioctl(cmd,value)实现用户态直接对物理内存的访问
 //(可能会导致系统安全系数直线降低，应用程序可利用这个漏洞在物理内存里面随意乱写)
