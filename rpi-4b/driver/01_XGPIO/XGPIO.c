@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-13 17:52:10
+ * @LastEditTime: 2022-06-13 17:56:44
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -28,6 +28,8 @@ int dev_major;//设备号
  * @description: GPIO寄存器表(BCM2711|RPI-4b)
  * @return {*}
  */
+//你可以通过以下结构体访问gpio寄存器映射到的虚拟内存。每个成员变量的地址就是实际寄存器的物理地址映射到的虚拟地址。
+//结构体提供了一种内存的访问模式，让你的程序根据直观的访问内存
 typedef struct{
     /*GPIO Function Select 0-5*/
     volatile unsigned int GPFSEL0;
