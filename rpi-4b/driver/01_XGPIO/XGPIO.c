@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-13 18:40:54
+ * @LastEditTime: 2022-06-13 18:56:07
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -177,7 +177,7 @@ int XGPIO_ioctl(unsigned int address, unsigned long value)
     if(!(address>=XGPIO_Registerx_Base && address <=(XGPIO_Registerx_Base+0xf0)))
     {
         //确保安全，只能在GPIO范围内乱写
-        return -1;//访问超出GPIO物理地址区域，错误
+        return 1;//访问超出GPIO物理地址区域，错误
     }
     pioctl_address = ioremap(address,sizeof(address));
     iowrite32(value,pioctl_address);
