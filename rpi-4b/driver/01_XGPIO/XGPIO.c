@@ -1,8 +1,8 @@
 /*
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
- * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-13 17:56:44
+ * @LastEditors: xddcore 1034029664@qq.com
+ * @LastEditTime: 2022-06-14 01:32:29
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -77,27 +77,61 @@ typedef struct{
 
 XGPIO_Register_Type *pXGPIO_Register;//pXGPIO_Register的指针
 
+
+
 //操作id号
 #define OPERATION_ID_NUMBER 2
-typef struct{
+typedef struct{
     const char *operation_name;
     const unsigned int operation_id;
-}XGPIO_Operationid_Type[2];
-//实例化
-XGPIO_Operationid_Type XGPIO_Operationidx={
-    {"true",1},
-    {"flase",0},
-};
-#define GPIO_NUMBER 27 //可操作的GPIO数量 BCM2711有57个gpio，不过40PIN引脚引出了29个,除去id_sd&idsc还有27
+}XGPIO_Operationid_Type;
+
+//GPIO对象方法类型
+typedef struct {
+    const char * operation_name;
+    int (*func)(unsigned int gpio_id,unsigned int operation_id, unsigned int *result);
+}XGPIO_Operation_Type;
+
 //GPIO对象类型
 typedef struct{
     const char *gpio_name;
     const unsigned int gpio_id;
-    XGPIO_Operationid_Type *XGPIO_Operationid;
-    XGPIO_Operation_Type *XGPIO_Operation；
-} XGPIO_Type[GPIO_NUMBER];
+    XGPIO_Operationid_Type (*pXGPIO_Operationid);
+    XGPIO_Operation_Type (*pXGPIO_Operation);
+} XGPIO_Type;
+
+
+
+//操作id号实例化
+XGPIO_Operationid_Type XGPIO_Operationidx[OPERATION_ID_NUMBER]={
+    {"true",1},
+    {"flase",0},
+};
+//GPIO对象可以进行的操作
+#define OPERATION_NUMBER 5 //支持的方法数量
+
+//下面的前3个对象方法，操作逻辑上来说，都是2值(要么开要么关)
+//第四个读取电平高低直接传个result指针就行，然后再从里面拿相应端口的电平结果
+//第五个debug设计为以四字节 打印所有gpio有关寄存器
+//方法声明
+int XGPIO_Operation_inout(unsigned int gpio_id,unsigned int operation_id, unsigned int *result);
+int XGPIO_Operation_pullupdown(unsigned int gpio_id,unsigned int operation_id, unsigned int *result);
+int XGPIO_Operation_setreset(unsigned int gpio_id,unsigned int operation_id, unsigned int *result);
+int XGPIO_Operation_pinlevel(unsigned int gpio_id,unsigned int operation_id, unsigned int *result);
+int XGPIO_Operation_DEBUG(unsigned int gpio_id,unsigned int operation_id, unsigned int *result);
+
+//实例化方法
+XGPIO_Operation_Type XGPIO_Operationx[OPERATION_NUMBER]={
+    {"inout",XGPIO_Operation_inout}, 
+    {"pullupdown",XGPIO_Operation_pullupdown}, 
+    {"setreset",XGPIO_Operation_setreset}, 
+    {"pinlevel",XGPIO_Operation_pinlevel}, 
+    {"DEBUG",XGPIO_Operation_DEBUG}, 
+};
+
+#define GPIO_NUMBER 27 //可操作的GPIO数量 BCM2711有57个gpio，不过40PIN引脚引出了29个,除去id_sd&idsc还有27
 //实例化GPIO对象数组
-XGPIO_Type XGPIO_OBJ={
+XGPIO_Type XGPIO_OBJ[GPIO_NUMBER]={
     {"gpio2", 2, XGPIO_Operationidx, XGPIO_Operationx},
     {"gpio3", 3, XGPIO_Operationidx, XGPIO_Operationx},
     {"gpio4", 4, XGPIO_Operationidx, XGPIO_Operationx},
@@ -127,33 +161,6 @@ XGPIO_Type XGPIO_OBJ={
     {"gpio20", 20, XGPIO_Operationidx, XGPIO_Operationx},
     {"gpio21", 21, XGPIO_Operationidx, XGPIO_Operationx},
 };
-
-//GPIO对象可以进行的操作
-#define OPERATION_NUMBER 5 //支持的方法数量
-//GPIO对象方法类型
-typedef struct {
-    const char * operation_name;
-    int (*func)(unsigned int gpio_obj,unsigned int operation_id, unsigned int * result);
-}XGPIO_Operation_Type[OPERATION_NUMBER];
-
-//下面的前3个对象方法，操作逻辑上来说，都是2值(要么开要么关)
-//第四个读取电平高低直接传个result指针就行，然后再从里面拿相应端口的电平结果
-//第五个debug设计为以四字节 打印所有gpio有关寄存器
-//方法声明
-int XGPIO_Operation_inout(XGPIO_Type (*gpio_obj)[0],unsigned int operation_id, unsigned int *result);
-int XGPIO_Operation_pullupdown(XGPIO_Type (*gpio_obj)[0],unsigned int operation_id, unsigned int *result);
-int XGPIO_Operation_setreset(XGPIO_Type (*gpio_obj)[0],unsigned int operation_id, unsigned int *result);
-int XGPIO_Operation_pinlevel(XGPIO_Type (*gpio_obj)[0],unsigned int operation_id, unsigned int *result);
-int XGPIO_Operation_DEBUG(XGPIO_Type (*gpio_obj)[0],unsigned int operation_id, unsigned int *result);
-
-//实例化方法
-XGPIO_Operation_Type XGPIO_Operationx={
-    {"inout",XGPIO_Operation_inout}, 
-    {"pullupdown",XGPIO_Operation_pullupdown}, 
-    {"setreset",XGPIO_Operation_setreset}, 
-    {"pinlevel",XGPIO_Operation_pinlevel}, 
-    {"DEBUG",XGPIO_Operation_DEBUG}, 
-};
 /**************************************************************/
 //投机取巧之 使用ioctl(cmd,value)实现用户态直接对物理内存的访问
 //(可能会导致系统安全系数直线降低，应用程序可利用这个漏洞在物理内存里面随意乱写)
@@ -181,27 +188,27 @@ long XGPIO_IOCTL(struct file * filp, unsigned int address, unsigned long value)
     return 0;
 }
 //XGPIO输入/输出设置方法
-int XGPIO_Operation_inout(XGPIO_Type (*gpio_obj)[0],unsigned int operation, unsigned int * result)
+int XGPIO_Operation_inout(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
 {
     return 0;
 }
 //XGPIO上拉/下拉设置方法
-int XGPIO_Operation_pullupdown(XGPIO_Type (*gpio_obj)[0],unsigned int operation, unsigned int * result)
+int XGPIO_Operation_pullupdown(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
 {
     return 0;
 }
 //XGPIO电平设置设置方法
-int XGPIO_Operation_setreset(XGPIO_Type (*gpio_obj)[0],unsigned int operation, unsigned int * result)
+int XGPIO_Operation_setreset(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
 {
     return 0;
 }
 //XGPIO电平读取方法
-int XGPIO_Operation_pinlevel(XGPIO_Type (*gpio_obj)[0],unsigned int operation, unsigned int * result)
+int XGPIO_Operation_pinlevel(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
 {
     return 0;
 }
 //XGPIODEBUG(打印所有GPIO寄存器)方法
-int XGPIO_Operation_DEBUG(XGPIO_Type (*gpio_obj)[0],unsigned int operation, unsigned int * result)
+int XGPIO_Operation_DEBUG(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
 {
     return 0;
 }
@@ -227,7 +234,7 @@ static int __init XGPIO_Init(void)
     }
     printk(KERN_INFO "XGPIO: Register Device Success! Device Major = %d.\n", dev_major);
     //在虚拟内存中申请GPIO寄存器组的空间（如果失败，则返回NULL指针）
-    if(!request_mem_region(XGPIO_Registerx_Base, sizeof(XGPIO_Registerx), XGPIO_Registerx_Name))
+    if(!request_mem_region(XGPIO_Registerx_Base, sizeof(XGPIO_Register_Type), XGPIO_Registerx_Name))
     {
         //仅检查物理内存区域是否已经被其他应用程序使用，不会进行映射操作。(linux的保护机制)
         //对于rpi官方镜像来说，如果使用默认config编译镜像，则gpio驱动会在机器启动时注册这个区域
@@ -237,8 +244,8 @@ static int __init XGPIO_Init(void)
         printk(KERN_ERR "XGPIO: XGPIO Will ignore it! Please DON'T Use offical GPIO Driver in future!\n");
         //return -EFAULT;
     }
-    //动态映射GPIO寄存器组
-    pXGPIO_Registerx = ioremap(XGPIO_Registerx_Base, sizeof(XGPIO_Registerx));
+    //动态映射GPIO寄存器组(物理地址->虚拟地址)
+    pXGPIO_Register = ioremap(XGPIO_Registerx_Base, sizeof(XGPIO_Register_Type));
     printk(KERN_INFO "XGPIO: XGPIO Register Sucess!\n");
     return 0;
 }
@@ -247,11 +254,11 @@ static void __exit XGPIO_Exit(void)
 {
     printk(KERN_INFO "XGPIO: XGPIO Begin Release.\n");
     //解除GPIO寄存器组映射
-    iounmap(pXGPIO_Registerx);
+    iounmap(pXGPIO_Register);
     //解除ioctl的访问物理address的虚拟内存映射
     iounmap(pioctl_address);
     //释放虚拟内存中的空间
-    release_mem_region(XGPIO_Registerx_Base,sizeof(XGPIO_Registerx));
+    release_mem_region(XGPIO_Registerx_Base,sizeof(XGPIO_Register_Type));
     //注销字符设备
     unregister_chrdev(dev_major,MODULE_NAME);
     printk(KERN_INFO "XGPIO: XGPIO Release Sucess!\n");
