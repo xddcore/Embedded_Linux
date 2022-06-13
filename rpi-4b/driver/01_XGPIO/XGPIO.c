@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-13 19:05:22
+ * @LastEditTime: 2022-06-13 21:16:51
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -87,31 +87,32 @@ XGPIO_Register_Type *pXGPIO_Register;//pXGPIO_Register的指针
 typedef struct{
     const char *operation_name;
     const unsigned int operation_id;
-}XGPIO_Operationid_Type;
+}XGPIO_Operationid_Type[OPERATION_ID_NUMBER];
 
+//GPIO对象可以进行的操作
+#define OPERATION_NUMBER 5 //支持的方法数量
 //GPIO对象方法类型
 typedef struct {
     const char * operation_name;
     int (*func)(unsigned int gpio_id,unsigned int operation_id, unsigned int *result);
-}XGPIO_Operation_Type;
+}XGPIO_Operation_Type[OPERATION_NUMBER];
 
+#define GPIO_NUMBER 27 //可操作的GPIO数量 BCM2711有57个gpio，不过40PIN引脚引出了29个,除去id_sd&idsc还有27
 //GPIO对象类型
 typedef struct{
     const char *gpio_name;
     const unsigned int gpio_id;
-    XGPIO_Operationid_Type (*pXGPIO_Operationid);
-    XGPIO_Operation_Type (*pXGPIO_Operation);
-} XGPIO_Type;
+    XGPIO_Operationid_Type (*pXGPIO_Operationid)[OPERATION_ID_NUMBER];
+    XGPIO_Operation_Type (*pXGPIO_Operation)[OPERATION_NUMBER];
+} XGPIO_Type[GPIO_NUMBER];
 
 
 
 //操作id号实例化
-XGPIO_Operationid_Type XGPIO_Operationidx[OPERATION_ID_NUMBER]={
+XGPIO_Operationid_Type XGPIO_Operationidx={
     {"true",1},
     {"flase",0},
 };
-//GPIO对象可以进行的操作
-#define OPERATION_NUMBER 5 //支持的方法数量
 
 //下面的前3个对象方法，操作逻辑上来说，都是2值(要么开要么关)
 //第四个读取电平高低直接传个result指针就行，然后再从里面拿相应端口的电平结果
@@ -124,7 +125,7 @@ int XGPIO_Operation_pinlevel(unsigned int gpio_id,unsigned int operation_id, uns
 int XGPIO_Operation_DEBUG(unsigned int gpio_id,unsigned int operation_id, unsigned int *result);
 
 //实例化方法
-XGPIO_Operation_Type XGPIO_Operationx[OPERATION_NUMBER]={
+XGPIO_Operation_Type XGPIO_Operationx={
     {"inout",XGPIO_Operation_inout}, 
     {"pullupdown",XGPIO_Operation_pullupdown}, 
     {"setreset",XGPIO_Operation_setreset}, 
@@ -132,9 +133,8 @@ XGPIO_Operation_Type XGPIO_Operationx[OPERATION_NUMBER]={
     {"DEBUG",XGPIO_Operation_DEBUG}, 
 };
 
-#define GPIO_NUMBER 27 //可操作的GPIO数量 BCM2711有57个gpio，不过40PIN引脚引出了29个,除去id_sd&idsc还有27
 //实例化GPIO对象数组
-XGPIO_Type XGPIO_OBJ[GPIO_NUMBER]={
+XGPIO_Type XGPIO_OBJ={
     {"gpio2", 2, XGPIO_Operationidx, XGPIO_Operationx},
     {"gpio3", 3, XGPIO_Operationidx, XGPIO_Operationx},
     {"gpio4", 4, XGPIO_Operationidx, XGPIO_Operationx},
