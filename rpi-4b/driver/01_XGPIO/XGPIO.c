@@ -2,15 +2,15 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-13 22:40:49
+ * @LastEditTime: 2022-06-14 10:12:03
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
  * 本质就是对底层硬件的访问。关于write和read的str匹配，我留了个结构体数组的实现思路，具体功能没实现。
  * 抛砖引玉交给后来者发挥了。
- * 大概字符串匹配逻辑 就是 用户态 write 字符串“gpio2,<XGPIO_Operation_inout,true>" 实现将gpio2设置为输出（若true为输出的话）
- * 同时支持多个gpio，多个操作同时设置比如将gpio2设置为输出模式，并输出高电平。同时将gpio3设置为输出模式。
- * “gpio2,<XGPIO_Operation_inout,true>,<XGPIO_Operation_setreset,true>gpio3,<XGPIO_Operation_inout,true>”
+ * 大概字符串匹配逻辑 就是 用户态 write 字符串“{gpio2|<inout,true>}" 实现将gpio2设置为输出（若true为输出的话）
+ * 同时支持多个gpio同时设置比如将gpio2和gpio3设置为输出模式。
+ * “{gpio2,gpio3|<inout,true>}”
  */
 #include <linux/init.h>
 #include <linux/module.h>
