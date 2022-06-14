@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-14 23:05:18
+ * @LastEditTime: 2022-06-14 23:15:12
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -353,7 +353,7 @@ long XGPIO_IOCTL(struct file * filp, unsigned int address, unsigned long value)
 // 向设备文件写入命令后，回来到这个处理函数
 ssize_t XGPIO_Write(struct file* filp, const char __user* buf, size_t len, loff_t* off)
 {
-  char *cmd;
+  char *cmd=NULL;
   int rc = 0;
   rc = copy_from_user(cmd, buf, len);
   if (rc < 0) {
@@ -370,7 +370,7 @@ static const struct file_operations module_fops={
     .release = NULL,
     .write = XGPIO_Write,
     .read = NULL,
-    .unlocked_ioctl = XGPIO_IOCTL,
+    .unlocked_ioctl = NULL,//XGPIO_IOCTL,
 };
 
 static int __init XGPIO_Init(void)
