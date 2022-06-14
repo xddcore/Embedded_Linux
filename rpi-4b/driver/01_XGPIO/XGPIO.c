@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-14 15:16:48
+ * @LastEditTime: 2022-06-14 15:53:41
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -23,6 +23,7 @@
 #define MODULE_NAME "XGPIO" //模块名
 int dev_major;//设备号
 /**************************************************************/
+/***********************XGPIO 数据结构**************************/
 #define XGPIO_Registerx_Name "XGPIO_Registerx"
 //arm为内存和io统一编址，下面这个地址为rpi4-bcm2711的映射方式。
 //不同的芯片可使用 cat /proc/iomem | grep gpio@ 进行查询
@@ -165,6 +166,159 @@ XGPIO_Type XGPIO_OBJ[GPIO_NUMBER]={
 };
 
 /**************************************************************/
+/***********************Write 命令解析**************************/
+/*Write命令解析函数*/
+void write_cmd_handler(char *cmd_str)
+{
+    const char cmd_head_chr = '{';
+    const char cmd_end_chr = '}';
+    const char attribute_head_chr = '<';
+    const char attribute_end_chr = '>';
+    const char obj_attr_seg_chr = '|';//对象和属性之间的分隔符
+    const char seg_chr = ',';//内部分隔符
+    unsigned int XGPIO_Pin_Set[GPIO_NUMBER]={0};//要操作的GPIO(索引表示)集合，如果gpio1要操作，则XGPIO_Pin_Set[1]=1;
+    unsigned int operation_id=0;//命令中的属性值
+    /*printf("驱动收到的命令：%s\n",cmd_str);*/
+    /*寻找命令*/
+    char *cmd_head = strchr(cmd_str, cmd_head_chr);//命令头部
+    char *cmd_end = strchr(cmd_str, cmd_end_chr);//命令尾部
+    int cmd_head_index = cmd_head-cmd_str;
+    int cmd_end_index = cmd_end-cmd_str;
+    /*if (cmd_head&&cmd_end_index)
+        printf("命令头部位置: [%d]，尾部位置：[%d]\n",cmd_head_index,cmd_end_index);
+    else
+        printf("未找到命令\n");*/
+    /*寻找对象和属性分隔符*/
+    char *obj_attr_seg = strchr(cmd_str, obj_attr_seg_chr);//对象和属性分隔符
+    int obj_attr_seg_index = obj_attr_seg-cmd_str;
+    /*if (obj_attr_seg)
+        printf("对象和属性分隔符，位置: [%d]\n",obj_attr_seg_index);
+    else
+        printf("未找到对象和属性分隔符\n");*/
+    /*寻找对象内部分隔符','*/
+    int seg_num=0;//查找到的对象内部分隔符数量
+    int seg_index[GPIO_NUMBER]={0};//最多能同时操作27个gpio对象
+    for(char *i=cmd_head;i<obj_attr_seg;i++)
+    {
+        char *seg = strchr(i, seg_chr);//命令头部
+        if(seg&&seg<=obj_attr_seg) {
+            i=seg;//直接从分隔符位置开始下一次查找
+            seg_index[seg_num] = seg - cmd_str;
+            //printf("对象分隔符，位置: [%d]\n", seg_index[seg_num]);
+            seg_num++;
+        }
+    }
+    /*寻找要操作的gpio对象*/
+    for(char *i=cmd_head;i<obj_attr_seg;i++) {//在gpio对象区间内寻找gpio对象
+        for(int j=0;j<GPIO_NUMBER;j++) {//查找驱动是否支持驱动这个gpio
+            if (!strncasecmp(i + 1, XGPIO_OBJ[j].gpio_name, strlen(XGPIO_OBJ[j].gpio_name)))//0找到
+            {
+                //printf("gpio对象：%s\n", XGPIO_OBJ[j].gpio_name);
+                XGPIO_Pin_Set[XGPIO_OBJ[j].gpio_id]=1;//将要操作的gpio写入gpio操作集合
+            }
+        }
+    }
+    /*寻找命令中的属性*/
+    char *attribute_head = strchr(cmd_str, attribute_head_chr);//命令中的属性头部
+    char *attribute_end = strchr(cmd_str, attribute_end_chr);//命令中的属性尾部
+    int attribute_head_index = attribute_head-cmd_str;
+    int attribute_end_index = attribute_end-cmd_str;
+    /*if (cmd_head&&cmd_end_index)
+        printf("属性，头部位置: [%d]，尾部位置：[%d]\n",attribute_head_index,attribute_end_index);
+    else
+        printf("未找到属性\n");*/
+    /*寻找属性内部分隔符','*/
+    int attri_seg_num=0;//查找到的属性内部分隔符数量
+    int attri_seg_index[OPERATION_NUMBER]={0};//最多能同时操作5个gpio对象的属性
+    for(char *i=attribute_head;i<attribute_end;i++)
+    {
+        char *seg = strchr(i, seg_chr);//命令头部
+        if(seg&&seg<=attribute_end) {
+            i=seg;//直接从分隔符位置开始下一次查找
+            attri_seg_index[attri_seg_num] = seg - cmd_str;
+            //printf("属性分隔符，位置: [%d]\n", attri_seg_index[attri_seg_num]);
+            attri_seg_num++;
+        }
+    }
+    /*寻找要操作属性值（也就是方法参数）*/
+    for(char *i=cmd_str+attri_seg_index[0];i<attribute_end;i++) {//在gpio属性区间内寻找gpio操作方法
+        for(int j=0;j<OPERATION_ID_NUMBER;j++) {//查找驱动是否支持这个操作方法
+            if (!strncasecmp(i + 1, XGPIO_Operationidx[j].operation_name, strlen(XGPIO_Operationidx[j].operation_name)))//0找到
+            {
+                //printf("gpio属性值：%s\n", XGPIO_Operationidx[j].operation_name);
+                operation_id=XGPIO_Operationidx[j].operation_id;
+            }
+        }
+    }
+    /*寻找要操作属性和属性值(也就是方法名和方法值)*/
+    for(char *i=attribute_head;i<attribute_end;i++) {//在gpio属性区间内寻找gpio操作方法
+        for(int j=0;j<OPERATION_NUMBER;j++) {//查找驱动是否支持这个操作方法
+            if (!strncasecmp(i + 1, XGPIO_Operationx[j].operation_name, strlen(XGPIO_Operationx[j].operation_name)))//0找到
+            {
+                //printf("gpio方法：%s\n", XGPIO_Operationx[j].operation_name);
+                for (int gpio_id = 0; gpio_id < GPIO_NUMBER; ++gpio_id) {
+                    if(XGPIO_Pin_Set[gpio_id]==1) {
+                        XGPIO_Operationx[j].func(gpio_id, operation_id, NULL);
+                    }
+                }
+            }
+        }
+    }
+}
+/**************************************************************/
+/***********************XGPIO 底层方法**************************/
+//XGPIO输入/输出设置方法(1:out,0:input)
+int XGPIO_Operation_inout(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
+{
+    if(gpio_id<=9&&gpio_id>=0)
+    {
+        pXGPIO_Register.GPFSEL0=(operation_id<<(gpio_id*3));
+    }
+    else if(gpio_id<=19&&gpio_id>=10)
+    {
+        pXGPIO_Register.GPFSEL1=(operation_id<<(gpio_id*3));
+    }
+    else if(gpio_id<=29&&gpio_id>=20)
+    {
+        pXGPIO_Register.GPFSEL2=(operation_id<<(gpio_id*3));
+    }
+    printk(KERN_INFO "XGPIO: XGPIO_Operation_inout <gpio%d,operation:%d>!\n",gpio_id,operation_id);
+    return 0;
+}
+//XGPIO上拉/下拉设置方法
+int XGPIO_Operation_pullupdown(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
+{
+    printk(KERN_INFO "XGPIO: XGPIO_Operation_pullupdown <gpio%d,operation:%d>!\n",gpio_id,operation_id);
+    return 0;
+}
+//XGPIO电平设置设置方法
+int XGPIO_Operation_setreset(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
+{
+    if(operation_id)//1:high level
+    {
+        pXGPIO_Register.GPSET0=(operation_id<<(gpio_id*1));
+    }
+    else
+    {
+        pXGPIO_Register.GPCLR0=(operation_id<<(gpio_id*1));
+    }
+    printk(KERN_INFO "XGPIO: XGPIO_Operation_setreset <gpio%d,operation:%d>!\n",gpio_id,operation_id);
+    return 0;
+}
+//XGPIO电平读取方法
+int XGPIO_Operation_pinlevel(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
+{
+    printk(KERN_INFO "XGPIO: XGPIO_Operation_pinlevel <gpio%d,operation:%d>!\n",gpio_id,operation_id);
+    return 0;
+}
+//XGPIODEBUG(打印所有GPIO寄存器)方法
+int XGPIO_Operation_DEBUG(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
+{
+    printk(KERN_INFO "XGPIO: XGPIO_Operation_DEBUG <gpio%d,operation:%d>!\n",gpio_id,operation_id);
+    return 0;
+}
+/**************************************************************/
+/***********************Linux 文件相关**************************/
 //投机取巧之 使用ioctl(cmd,value)实现用户态直接对物理内存的访问
 //(可能会导致系统安全系数直线降低，应用程序可利用这个漏洞在物理内存里面随意乱写)
 //XGPIO_ioctl 为用户态的应用程序提供直接访问物理地址的接口
@@ -191,37 +345,26 @@ long XGPIO_IOCTL(struct file * filp, unsigned int address, unsigned long value)
     if(status){printk(KERN_ERR "XGPIO: Invail Physical Address, You only allow to access gpio address region!\n");return -EFAULT;}
     return 0;
 }
-//XGPIO输入/输出设置方法
-int XGPIO_Operation_inout(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
+
+// 向设备文件写入命令后，回来到这个处理函数
+ssize_t XGPIO_Write(struct file* filp, const char __user* buf, size_t len, loff_t* off)
 {
-    return 0;
-}
-//XGPIO上拉/下拉设置方法
-int XGPIO_Operation_pullupdown(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
-{
-    return 0;
-}
-//XGPIO电平设置设置方法
-int XGPIO_Operation_setreset(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
-{
-    return 0;
-}
-//XGPIO电平读取方法
-int XGPIO_Operation_pinlevel(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
-{
-    return 0;
-}
-//XGPIODEBUG(打印所有GPIO寄存器)方法
-int XGPIO_Operation_DEBUG(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
-{
-    return 0;
+  char *cmd;
+  int rc = 0;
+  rc = copy_from_user(cmd, buf, len);
+  if (rc < 0) {
+    return rc;
+  }
+  *off = 0; // 每次控制之后，文件索引都回到开始
+  write_cmd_handler(cmd);//解析命令并执行(若命令无效，不会报错，也不会影响底层寄存器)
+  return len;
 }
 /**************************************************************/
 static const struct file_operations module_fops={
     .owner = THIS_MODULE,
     .open = NULL,
     .release = NULL,
-    .write = NULL,
+    .write = XGPIO_Write,
     .read = NULL,
     .unlocked_ioctl = XGPIO_IOCTL,
 };
