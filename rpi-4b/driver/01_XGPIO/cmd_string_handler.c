@@ -16,7 +16,7 @@ typedef struct {
     int (*func)(unsigned int gpio_id,unsigned int operation_id, unsigned int *result);
 }XGPIO_Operation_Type;
 
-#define GPIO_NUMBER 25 //可操作的GPIO数量 BCM2711有57个gpio，不过40PIN引脚引出了29个,除去id_sd&idsc还有27
+#define GPIO_NUMBER 26 //可操作的GPIO数量 BCM2711有57个gpio，不过40PIN引脚引出了29个,除去id_sd&idsc还有27
 //GPIO对象类型
 typedef struct{
     const char *gpio_name;
