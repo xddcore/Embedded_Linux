@@ -1,8 +1,8 @@
 /*
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-12 10:17:41
- * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-14 16:43:08
+ * @LastEditors: xddcore 1034029664@qq.com
+ * @LastEditTime: 2022-06-15 00:36:57
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO_APP.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <string.h>
 
 #define XGPIO_Registerx_Base 0xfe200000 //GPIO寄存器组基地址
 					//
@@ -38,13 +39,19 @@ int main(int argc, char* argv[])
   char * cmd1="{gpio2|<inout,true>}";//设置为输出模式
   char * cmd2="{gpio2|<setreset,true>}";//设置为高电平
   char * cmd3="{gpio2|<setreset,false>}";//设置为低电平
-  write(fd,cmd1,sizeof(cmd1));
+  char * cmd4="{gpio3,gpio4|<inout,true>}";//设置为输出模式
+  char * cmd5="{gpio3,gpio4|<setreset,true>}";//设置为高电平
+  char * cmd6="{gpio3,gpio4|<setreset,false>}";//设置为低电平
+  printf("\n\nAPP send cmd to XGPIO Driver:%s\n",cmd1);
+  write(fd,cmd1,strlen(cmd1));
   for(i=0;i<10;i++)
   {
-    write(fd,cmd2,sizeof(cmd2));
+    printf("APP send cmd to XGPIO Driver:%s\n",cmd2);
+    write(fd,cmd2,strlen(cmd2));
     //ioctl(fd, XGPIO_Registerx_Base+0x1c, 1<<(1*2));//设置为高电平
     sleep(1);
-    write(fd,cmd3,sizeof(cmd3));
+    printf("APP send cmd to XGPIO Driver:%s\n",cmd3);
+    write(fd,cmd3,strlen(cmd3));
     //ioctl(fd, XGPIO_Registerx_Base+0x28, 1<<(1*2));//设置为低电平
     sleep(1);
   }

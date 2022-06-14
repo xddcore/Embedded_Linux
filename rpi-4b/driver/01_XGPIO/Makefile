@@ -24,6 +24,7 @@ all:
 	cp `pwd`/$(MODULE_NAME).c  $(GITHUB_DIR)/$(MODULE_DIR)
 	cp `pwd`/$(MODULE_NAME).o  $(GITHUB_DIR)/$(MODULE_DIR)
 	cp `pwd`/$(APP_NAME)  $(GITHUB_DIR)/$(MODULE_DIR)
+	cp `pwd`/$(APP_NAME).c  $(GITHUB_DIR)/$(MODULE_DIR)
 	cp `pwd`/Makefile  $(GITHUB_DIR)/$(MODULE_DIR)
 
 cpfromgit:
