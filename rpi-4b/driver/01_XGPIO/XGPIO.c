@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-14 23:56:38
+ * @LastEditTime: 2022-06-15 00:11:02
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -303,11 +303,11 @@ int XGPIO_Operation_setreset(unsigned int gpio_id,unsigned int operation_id, uns
 {
     if(operation_id)//1:high level
     {
-        pXGPIO_Register->GPSET0=(operation_id<<(gpio_id*1));
+        pXGPIO_Register->GPSET0=(1<<(gpio_id*1));//1:enable
     }
     else
     {
-        pXGPIO_Register->GPCLR0=(operation_id<<(gpio_id*1));
+        pXGPIO_Register->GPCLR0=(1<<(gpio_id*1));//1:enable
     }
     printk(KERN_INFO "XGPIO: XGPIO_Operation_setreset <gpio%d,operation:%d>!\n",gpio_id,operation_id);
     return 0;
