@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-14 23:41:02
+ * @LastEditTime: 2022-06-14 23:49:29
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -202,6 +202,20 @@ void write_cmd_handler(char * cmd_str)
     char *i=NULL;
     int j=0;
     int gpio_id_i = 0;
+    /*寻找命令中的属性*/
+    char *attribute_head = strchr(cmd_str, attribute_head_chr);//命令中的属性头部
+    char *attribute_end = strchr(cmd_str, attribute_end_chr);//命令中的属性尾部
+    int attribute_head_index = attribute_head-cmd_str;
+    int attribute_end_index = attribute_end-cmd_str;
+    /*if (cmd_head&&cmd_end_index)
+        printf("属性，头部位置: [%d]，尾部位置：[%d]\n",attribute_head_index,attribute_end_index);
+    else
+        printf("未找到属性\n");*/
+    /*寻找属性内部分隔符','*/
+    int attri_seg_num=0;//查找到的属性内部分隔符数量
+    int attri_seg_index[OPERATION_NUMBER]={0};//最多能同时操作5个gpio对象的属性
+
+
     for(i=cmd_head;i<obj_attr_seg;i++)
     {
         char *seg = strchr(i, seg_chr);//命令头部
@@ -222,18 +236,7 @@ void write_cmd_handler(char * cmd_str)
             }
         }
     }
-    /*寻找命令中的属性*/
-    char *attribute_head = strchr(cmd_str, attribute_head_chr);//命令中的属性头部
-    char *attribute_end = strchr(cmd_str, attribute_end_chr);//命令中的属性尾部
-    int attribute_head_index = attribute_head-cmd_str;
-    int attribute_end_index = attribute_end-cmd_str;
-    /*if (cmd_head&&cmd_end_index)
-        printf("属性，头部位置: [%d]，尾部位置：[%d]\n",attribute_head_index,attribute_end_index);
-    else
-        printf("未找到属性\n");*/
     /*寻找属性内部分隔符','*/
-    int attri_seg_num=0;//查找到的属性内部分隔符数量
-    int attri_seg_index[OPERATION_NUMBER]={0};//最多能同时操作5个gpio对象的属性
     for(i=attribute_head;i<attribute_end;i++)
     {
         char *seg = strchr(i, seg_chr);//命令头部
