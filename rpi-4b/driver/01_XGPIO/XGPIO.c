@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-14 23:49:29
+ * @LastEditTime: 2022-06-14 23:56:38
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -215,7 +215,7 @@ void write_cmd_handler(char * cmd_str)
     int attri_seg_num=0;//查找到的属性内部分隔符数量
     int attri_seg_index[OPERATION_NUMBER]={0};//最多能同时操作5个gpio对象的属性
 
-
+    printk(KERN_INFO "receive cmd：%s\n",cmd_str);
     for(i=cmd_head;i<obj_attr_seg;i++)
     {
         char *seg = strchr(i, seg_chr);//命令头部
@@ -359,13 +359,16 @@ ssize_t XGPIO_Write(struct file* filp, const char __user* buf, size_t len, loff_
   char cmd[250]={0};
   char *pcmd = cmd;
   int rc = 0;
+  printk(KERN_INFO "XGPIO: DEBUG-p1.\n");
   rc = copy_from_user(cmd, buf, len);
   if (rc < 0) {
     return rc;
   }
-  *off = 0; // 每次控制之后，文件索引都回到开始
+  //*off = 0; // 每次控制之后，文件索引都回到开始
+  printk(KERN_INFO "XGPIO: DEBUG-p2.\n");
   write_cmd_handler(pcmd);//解析命令并执行(若命令无效，不会报错，也不会影响底层寄存器)
-  return len;
+  printk(KERN_INFO "XGPIO: DEBUG-p3.\n");
+  return 0;
 }
 /**************************************************************/
 static const struct file_operations module_fops={
