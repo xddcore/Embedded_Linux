@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-14 15:53:41
+ * @LastEditTime: 2022-06-14 16:04:11
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -168,7 +168,7 @@ XGPIO_Type XGPIO_OBJ[GPIO_NUMBER]={
 /**************************************************************/
 /***********************Write 命令解析**************************/
 /*Write命令解析函数*/
-void write_cmd_handler(char *cmd_str)
+void write_cmd_handler(char * cmd_str)
 {
     const char cmd_head_chr = '{';
     const char cmd_end_chr = '}';
@@ -198,7 +198,11 @@ void write_cmd_handler(char *cmd_str)
     /*寻找对象内部分隔符','*/
     int seg_num=0;//查找到的对象内部分隔符数量
     int seg_index[GPIO_NUMBER]={0};//最多能同时操作27个gpio对象
-    for(char *i=cmd_head;i<obj_attr_seg;i++)
+    //c89不允许在for里面初始化i
+    char *i=NULL;
+    int j=0;
+    int gpio_id_i = 0;
+    for(i=cmd_head;i<obj_attr_seg;i++)
     {
         char *seg = strchr(i, seg_chr);//命令头部
         if(seg&&seg<=obj_attr_seg) {
@@ -209,7 +213,7 @@ void write_cmd_handler(char *cmd_str)
         }
     }
     /*寻找要操作的gpio对象*/
-    for(char *i=cmd_head;i<obj_attr_seg;i++) {//在gpio对象区间内寻找gpio对象
+    for(i=cmd_head;i<obj_attr_seg;i++) {//在gpio对象区间内寻找gpio对象
         for(int j=0;j<GPIO_NUMBER;j++) {//查找驱动是否支持驱动这个gpio
             if (!strncasecmp(i + 1, XGPIO_OBJ[j].gpio_name, strlen(XGPIO_OBJ[j].gpio_name)))//0找到
             {
@@ -230,7 +234,7 @@ void write_cmd_handler(char *cmd_str)
     /*寻找属性内部分隔符','*/
     int attri_seg_num=0;//查找到的属性内部分隔符数量
     int attri_seg_index[OPERATION_NUMBER]={0};//最多能同时操作5个gpio对象的属性
-    for(char *i=attribute_head;i<attribute_end;i++)
+    for(i=attribute_head;i<attribute_end;i++)
     {
         char *seg = strchr(i, seg_chr);//命令头部
         if(seg&&seg<=attribute_end) {
@@ -241,8 +245,8 @@ void write_cmd_handler(char *cmd_str)
         }
     }
     /*寻找要操作属性值（也就是方法参数）*/
-    for(char *i=cmd_str+attri_seg_index[0];i<attribute_end;i++) {//在gpio属性区间内寻找gpio操作方法
-        for(int j=0;j<OPERATION_ID_NUMBER;j++) {//查找驱动是否支持这个操作方法
+    for(i=cmd_str+attri_seg_index[0];i<attribute_end;i++) {//在gpio属性区间内寻找gpio操作方法
+        for(j=0;j<OPERATION_ID_NUMBER;j++) {//查找驱动是否支持这个操作方法
             if (!strncasecmp(i + 1, XGPIO_Operationidx[j].operation_name, strlen(XGPIO_Operationidx[j].operation_name)))//0找到
             {
                 //printf("gpio属性值：%s\n", XGPIO_Operationidx[j].operation_name);
@@ -251,14 +255,14 @@ void write_cmd_handler(char *cmd_str)
         }
     }
     /*寻找要操作属性和属性值(也就是方法名和方法值)*/
-    for(char *i=attribute_head;i<attribute_end;i++) {//在gpio属性区间内寻找gpio操作方法
-        for(int j=0;j<OPERATION_NUMBER;j++) {//查找驱动是否支持这个操作方法
+    for(i=attribute_head;i<attribute_end;i++) {//在gpio属性区间内寻找gpio操作方法
+        for(j=0;j<OPERATION_NUMBER;j++) {//查找驱动是否支持这个操作方法
             if (!strncasecmp(i + 1, XGPIO_Operationx[j].operation_name, strlen(XGPIO_Operationx[j].operation_name)))//0找到
             {
                 //printf("gpio方法：%s\n", XGPIO_Operationx[j].operation_name);
-                for (int gpio_id = 0; gpio_id < GPIO_NUMBER; ++gpio_id) {
-                    if(XGPIO_Pin_Set[gpio_id]==1) {
-                        XGPIO_Operationx[j].func(gpio_id, operation_id, NULL);
+                for (gpio_id_i = 0; gpio_id_i < GPIO_NUMBER; gpio_id_i++) {
+                    if(XGPIO_Pin_Set[gpio_id_i]==1) {
+                        XGPIO_Operationx[j].func(gpio_id_i, operation_id, NULL);
                     }
                 }
             }
