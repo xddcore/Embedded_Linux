@@ -1,8 +1,8 @@
 /*
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
- * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-14 16:04:11
+ * @LastEditors: xddcore 1034029664@qq.com
+ * @LastEditTime: 2022-06-14 23:05:18
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -214,7 +214,7 @@ void write_cmd_handler(char * cmd_str)
     }
     /*寻找要操作的gpio对象*/
     for(i=cmd_head;i<obj_attr_seg;i++) {//在gpio对象区间内寻找gpio对象
-        for(int j=0;j<GPIO_NUMBER;j++) {//查找驱动是否支持驱动这个gpio
+        for(j=0;j<GPIO_NUMBER;j++) {//查找驱动是否支持驱动这个gpio
             if (!strncasecmp(i + 1, XGPIO_OBJ[j].gpio_name, strlen(XGPIO_OBJ[j].gpio_name)))//0找到
             {
                 //printf("gpio对象：%s\n", XGPIO_OBJ[j].gpio_name);
@@ -276,15 +276,15 @@ int XGPIO_Operation_inout(unsigned int gpio_id,unsigned int operation_id, unsign
 {
     if(gpio_id<=9&&gpio_id>=0)
     {
-        pXGPIO_Register.GPFSEL0=(operation_id<<(gpio_id*3));
+        pXGPIO_Register->GPFSEL0=(operation_id<<(gpio_id*3));
     }
     else if(gpio_id<=19&&gpio_id>=10)
     {
-        pXGPIO_Register.GPFSEL1=(operation_id<<(gpio_id*3));
+        pXGPIO_Register->GPFSEL1=(operation_id<<(gpio_id*3));
     }
     else if(gpio_id<=29&&gpio_id>=20)
     {
-        pXGPIO_Register.GPFSEL2=(operation_id<<(gpio_id*3));
+        pXGPIO_Register->GPFSEL2=(operation_id<<(gpio_id*3));
     }
     printk(KERN_INFO "XGPIO: XGPIO_Operation_inout <gpio%d,operation:%d>!\n",gpio_id,operation_id);
     return 0;
@@ -300,11 +300,11 @@ int XGPIO_Operation_setreset(unsigned int gpio_id,unsigned int operation_id, uns
 {
     if(operation_id)//1:high level
     {
-        pXGPIO_Register.GPSET0=(operation_id<<(gpio_id*1));
+        pXGPIO_Register->GPSET0=(operation_id<<(gpio_id*1));
     }
     else
     {
-        pXGPIO_Register.GPCLR0=(operation_id<<(gpio_id*1));
+        pXGPIO_Register->GPCLR0=(operation_id<<(gpio_id*1));
     }
     printk(KERN_INFO "XGPIO: XGPIO_Operation_setreset <gpio%d,operation:%d>!\n",gpio_id,operation_id);
     return 0;
