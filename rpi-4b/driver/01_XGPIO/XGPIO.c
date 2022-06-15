@@ -2,15 +2,20 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-15 14:50:38
+ * @LastEditTime: 2022-06-15 15:57:18
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
  * 本质就是对底层硬件的访问。关于write和read的str匹配，我留了个结构体数组的实现思路，具体功能没实现。
- * 抛砖引玉交给后来者发挥了。
+ * 抛砖引玉交给后来者发挥了。一想，这个坑我不填的话，应该也没人填了，于是乎把它填完
  * 大概字符串匹配逻辑 就是 用户态 write 字符串“{gpio2|<inout,true>}" 实现将gpio2设置为输出（若true为输出的话）
  * 同时支持多个gpio同时设置比如将gpio2和gpio3设置为输出模式。
  * “{gpio2,gpio3|<inout,true>}”
+ * 还支持读取gpio端口电平
+ * 先write“{gpio2,gpio3|<pinlevel,true>}”
+ * 然后再去read ，会返回一个unsigned int(即GPLEV0寄存器的值)，请注意这个值不是实时的
+ * 每次更新值之前，请先write
+ * 
  */
 #include <linux/init.h>
 #include <linux/module.h>
@@ -184,7 +189,8 @@ XGPIO_Type XGPIO_OBJ[GPIO_NUMBER]={
     {"gpio20", 20, XGPIO_Operationidx, XGPIO_Operationx},
     {"gpio21", 21, XGPIO_Operationidx, XGPIO_Operationx},
 };
-
+unsigned int operation_result=0;
+unsigned int *poperation_result = &operation_result;
 /**************************************************************/
 /***********************Write 命令解析**************************/
 /*Write命令解析函数*/
@@ -285,7 +291,7 @@ void write_cmd_handler(char * cmd_str)
                 //printf("gpio方法：%s\n", XGPIO_Operationx[j].operation_name);
                 for (gpio_id_i = 0; gpio_id_i < GPIO_NUMBER; gpio_id_i++) {
                     if(XGPIO_Pin_Set[gpio_id_i]==1) {
-                        XGPIO_Operationx[j].func(gpio_id_i, operation_id, NULL);
+                        XGPIO_Operationx[j].func(gpio_id_i, operation_id, poperation_result);
                     }
                 }
             }
@@ -320,17 +326,32 @@ int XGPIO_Operation_inout(unsigned int gpio_id,unsigned int operation_id, unsign
         inout_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPFSEL2_Offset,4);
         iowrite32(operation_id<<(gpio_id*3),inout_address);
     }
-    //printk(KERN_INFO "XGPIO: DEBUG-p4-inout-pXGPIO_Register(%p)->GPFSEL0:(%p)|value(0x%x).\n", \
-    pXGPIO_Register,&(pXGPIO_Register->GPFSEL0),pXGPIO_Register->GPFSEL0);
+    /*printk(KERN_INFO "XGPIO: DEBUG-p4-inout-pXGPIO_Register(%p)->GPFSEL0:(%p)|value(0x%x).\n", \
+    pXGPIO_Register,&(pXGPIO_Register->GPFSEL0),pXGPIO_Register->GPFSEL0);*/
     printk(KERN_INFO "XGPIO: XGPIO_Operation_inout <gpio%d,operation:%d>!\n",gpio_id,operation_id);
     //解除inout_address的访问物理address的虚拟内存映射
     iounmap(inout_address);
     return 0;
 }
 //XGPIO上拉/下拉设置方法
+//operation_id 1=pullup 0=pulldown
 int XGPIO_Operation_pullupdown(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
 {
+    unsigned int * pullupdown_address;//通过setreset_address访问的虚拟内存
+    if(operation_id==0)operation_id=2;//change to 10(bin)
+    if(gpio_id>=0&&gpio_id<=15)//
+    {
+        pullupdown_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPIO_PUP_PDN_CNTRL_REG0_Offset,4);
+        iowrite32(operation_id<<(gpio_id*2),pullupdown_address);
+    }
+    else
+    {
+        pullupdown_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPIO_PUP_PDN_CNTRL_REG0_Offset,4);
+        iowrite32(operation_id<<(gpio_id*2),pullupdown_address);
+    }
     printk(KERN_INFO "XGPIO: XGPIO_Operation_pullupdown <gpio%d,operation:%d>!\n",gpio_id,operation_id);
+    //解除inout_address的访问物理address的虚拟内存映射
+    iounmap(pullupdown_address);
     return 0;
 }
 //XGPIO电平设置设置方法
@@ -350,10 +371,10 @@ int XGPIO_Operation_setreset(unsigned int gpio_id,unsigned int operation_id, uns
         iowrite32(1<<(gpio_id*1),setreset_address);
     }
     printk(KERN_INFO "XGPIO: XGPIO_Operation_setreset <gpio%d,operation:%d>!\n",gpio_id,operation_id);
-    //printk(KERN_INFO "XGPIO: DEBUG-p5-setreset-pXGPIO_Register(%p)->GPSET0:(%p)|value(0x%x).\n", \
+    /*printk(KERN_INFO "XGPIO: DEBUG-p5-setreset-pXGPIO_Register(%p)->GPSET0:(%p)|value(0x%x).\n", \
     pXGPIO_Register,&(pXGPIO_Register->GPSET0),pXGPIO_Register->GPSET0);
-    //printk(KERN_INFO "XGPIO: DEBUG-p6-setreset-pXGPIO_Register(%p)->GPCLR0:(%p)|value(0x%x).\n", \
-    pXGPIO_Register,&(pXGPIO_Register->GPCLR0),pXGPIO_Register->GPCLR0);
+    printk(KERN_INFO "XGPIO: DEBUG-p6-setreset-pXGPIO_Register(%p)->GPCLR0:(%p)|value(0x%x).\n", \
+    pXGPIO_Register,&(pXGPIO_Register->GPCLR0),pXGPIO_Register->GPCLR0);*/
     //解除inout_address的访问物理address的虚拟内存映射
     iounmap(setreset_address);
     return 0;
@@ -361,7 +382,11 @@ int XGPIO_Operation_setreset(unsigned int gpio_id,unsigned int operation_id, uns
 //XGPIO电平读取方法
 int XGPIO_Operation_pinlevel(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
 {
-    printk(KERN_INFO "XGPIO: XGPIO_Operation_pinlevel <gpio%d,operation:%d>!\n",gpio_id,operation_id);
+    unsigned int *pinlevel_address=NULL;
+    pinlevel_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPLEV0_Offset,4);
+    *result=ioread32(pinlevel_address);
+    printk(KERN_INFO "XGPIO: XGPIO_Operation_pinlevel <gpio%d,operation:%d>!\n \
+    Please use read(len=1) to get GPLEV0 register value\n",gpio_id,operation_id);
     return 0;
 }
 //XGPIODEBUG(打印所有GPIO寄存器)方法
@@ -416,6 +441,20 @@ ssize_t XGPIO_Write(struct file* filp, const char __user* buf, size_t len, loff_
   printk(KERN_INFO "XGPIO: DEBUG-p2.\n");
   write_cmd_handler(pcmd);//解析命令并执行(若命令无效，不会报错，也不会影响底层寄存器)
   printk(KERN_INFO "XGPIO: DEBUG-p3.\n");
+  return 0;
+}
+// 向设备文件读取命令后，回来到这个处理函数
+ssize_t XGPIO_Read(struct file* filp, char __user* buf, size_t len, loff_t* off)
+{
+  int rc = 0;
+  printk(KERN_INFO "XGPIO: DEBUG-p7.\n");
+  rc = copy_to_user(buf, poperation_result, len);//无论应用想读多长，只能读4bytes,应用层的len应该=1
+  if (rc < 0) {
+    return rc;
+  }
+  //*off = 0; // 每次控制之后，文件索引都回到开始
+  printk(KERN_INFO "XGPIO: DEBUG-p8.\n");
+  printk(KERN_INFO "XGPIO: DEBUG-p9.\n");
   return 0;
 }
 /**************************************************************/
