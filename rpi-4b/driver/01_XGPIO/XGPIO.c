@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-15 14:05:47
+ * @LastEditTime: 2022-06-15 14:50:38
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -28,12 +28,32 @@ int dev_major;//设备号
 //arm为内存和io统一编址，下面这个地址为rpi4-bcm2711的映射方式。
 //不同的芯片可使用 cat /proc/iomem | grep gpio@ 进行查询
 #define XGPIO_Registerx_Base 0xfe200000 //GPIO寄存器组基地址
+/******************GPIO功能选择寄存器*******************/
+#define XGPIO_Registerx_GPFSEL0_Offset 0x00
+#define XGPIO_Registerx_GPFSEL1_Offset 0x04
+#define XGPIO_Registerx_GPFSEL2_Offset 0x08
+#define XGPIO_Registerx_GPFSEL3_Offset 0x0c
+#define XGPIO_Registerx_GPFSEL4_Offset 0x10
+#define XGPIO_Registerx_GPFSEL4_Offset 0x14
+/******************GPIO输出高低电平寄存器*******************/
+#define XGPIO_Registerx_GPSET0_Offset 0x1c
+#define XGPIO_Registerx_GPCLR0_Offset 0x28
+/******************GPIO电平状态寄存器*******************/
+#define XGPIO_Registerx_GPLEV0_Offset 0x34
+/******************GPIO上拉下拉寄存器*******************/
+#define XGPIO_Registerx_GPIO_PUP_PDN_CNTRL_REG0_Offset 0xe4
+#define XGPIO_Registerx_GPIO_PUP_PDN_CNTRL_REG1_Offset 0xe8
 /**
  * @description: GPIO寄存器表(BCM2711|RPI-4b)
  * @return {*}
  */
 //你可以通过以下结构体访问gpio寄存器映射到的虚拟内存。每个成员变量的地址就是实际寄存器的物理地址映射到的虚拟地址。
 //结构体提供了一种内存的访问模式，让你的程序根据直观的访问内存
+//不过经过后期研究，发现BCM2711的GPIO相关寄存器并不是线性地址分布的
+//具体表现为sizeof下面的类型=0x78,而datasheet中的offset为0xf0
+//如果要使用结构体的方式访问，需要定义一些占位的结构体变量
+//转念一想，反正都有ioctl提供给应用层直接访问寄存器。
+//所以在具体的底层方法中，就直接ioremap了
 typedef struct{
     /*GPIO Function Select 0-5*/
     volatile unsigned int GPFSEL0;
@@ -281,21 +301,30 @@ void write_cmd_handler(char * cmd_str)
 //XGPIO输入/输出设置方法(1:out,0:input)
 int XGPIO_Operation_inout(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
 {
+    unsigned int * inout_address;//通过inout_address访问的虚拟内存
     if(gpio_id<=9&&gpio_id>=0)
     {
-        pXGPIO_Register->GPFSEL0=(operation_id<<(gpio_id*3));
+        //pXGPIO_Register->GPFSEL0=(operation_id<<(gpio_id*3));
+        inout_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPFSEL0_Offset,4);
+        iowrite32(operation_id<<(gpio_id*3),inout_address);
     }
     else if(gpio_id<=19&&gpio_id>=10)
     {
-        pXGPIO_Register->GPFSEL1=(operation_id<<(gpio_id*3));
+        //pXGPIO_Register->GPFSEL1=(operation_id<<(gpio_id*3));
+        inout_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPFSEL1_Offset,4);
+        iowrite32(operation_id<<(gpio_id*3),inout_address);
     }
     else if(gpio_id<=29&&gpio_id>=20)
     {
-        pXGPIO_Register->GPFSEL2=(operation_id<<(gpio_id*3));
+        //pXGPIO_Register->GPFSEL2=(operation_id<<(gpio_id*3));
+        inout_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPFSEL2_Offset,4);
+        iowrite32(operation_id<<(gpio_id*3),inout_address);
     }
-    printk(KERN_INFO "XGPIO: DEBUG-p4-inout-pXGPIO_Register(%p)->GPFSEL0:(%p)|value(0x%x).\n", \
+    //printk(KERN_INFO "XGPIO: DEBUG-p4-inout-pXGPIO_Register(%p)->GPFSEL0:(%p)|value(0x%x).\n", \
     pXGPIO_Register,&(pXGPIO_Register->GPFSEL0),pXGPIO_Register->GPFSEL0);
     printk(KERN_INFO "XGPIO: XGPIO_Operation_inout <gpio%d,operation:%d>!\n",gpio_id,operation_id);
+    //解除inout_address的访问物理address的虚拟内存映射
+    iounmap(inout_address);
     return 0;
 }
 //XGPIO上拉/下拉设置方法
@@ -307,19 +336,26 @@ int XGPIO_Operation_pullupdown(unsigned int gpio_id,unsigned int operation_id, u
 //XGPIO电平设置设置方法
 int XGPIO_Operation_setreset(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
 {
+    unsigned int * setreset_address;//通过setreset_address访问的虚拟内存
     if(operation_id)//1:high level
     {
-        pXGPIO_Register->GPSET0=(1<<(gpio_id*1));//1:enable
+        //pXGPIO_Register->GPSET0=(1<<(gpio_id*1));//1:enable
+        setreset_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPSET0_Offset,4);
+        iowrite32(1<<(gpio_id*1),setreset_address);
     }
     else
     {
-        pXGPIO_Register->GPCLR0=(1<<(gpio_id*1));//1:enable
+        //pXGPIO_Register->GPCLR0=(1<<(gpio_id*1));//1:enable
+        setreset_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPCLR0_Offset,4);
+        iowrite32(1<<(gpio_id*1),setreset_address);
     }
     printk(KERN_INFO "XGPIO: XGPIO_Operation_setreset <gpio%d,operation:%d>!\n",gpio_id,operation_id);
-    printk(KERN_INFO "XGPIO: DEBUG-p5-setreset-pXGPIO_Register(%p)->GPSET0:(%p)|value(0x%x).\n", \
+    //printk(KERN_INFO "XGPIO: DEBUG-p5-setreset-pXGPIO_Register(%p)->GPSET0:(%p)|value(0x%x).\n", \
     pXGPIO_Register,&(pXGPIO_Register->GPSET0),pXGPIO_Register->GPSET0);
-    printk(KERN_INFO "XGPIO: DEBUG-p6-setreset-pXGPIO_Register(%p)->GPCLR0:(%p)|value(0x%x).\n", \
+    //printk(KERN_INFO "XGPIO: DEBUG-p6-setreset-pXGPIO_Register(%p)->GPCLR0:(%p)|value(0x%x).\n", \
     pXGPIO_Register,&(pXGPIO_Register->GPCLR0),pXGPIO_Register->GPCLR0);
+    //解除inout_address的访问物理address的虚拟内存映射
+    iounmap(setreset_address);
     return 0;
 }
 //XGPIO电平读取方法
@@ -340,9 +376,9 @@ int XGPIO_Operation_DEBUG(unsigned int gpio_id,unsigned int operation_id, unsign
 //(可能会导致系统安全系数直线降低，应用程序可利用这个漏洞在物理内存里面随意乱写)
 //XGPIO_ioctl 为用户态的应用程序提供直接访问物理地址的接口
 //更大的io需求，例如访问显存之类的，还可以使用mmap内存映射实现
-unsigned int * pioctl_address;//通过ioctl访问的虚拟内存
 int XGPIO_ioctl(unsigned int address, unsigned long value)
 {
+    unsigned int * pioctl_address;//通过ioctl访问的虚拟内存
     //ioremap 将物理地址映射到虚拟地址
     //(在linux中，内核态中的驱动通过将物理地址映射到虚拟地址，实现对io的访问)
     if(!(address>=XGPIO_Registerx_Base && address <=(XGPIO_Registerx_Base+0xf0)))
@@ -352,6 +388,8 @@ int XGPIO_ioctl(unsigned int address, unsigned long value)
     }
     pioctl_address = ioremap(address,sizeof(address));
     iowrite32(value,pioctl_address);
+    //解除ioctl的访问物理address的虚拟内存映射
+    iounmap(pioctl_address);
     return 0;
 }
 long XGPIO_IOCTL(struct file * filp, unsigned int address, unsigned long value)
@@ -413,7 +451,7 @@ static int __init XGPIO_Init(void)
         //return -EFAULT;
     }
     //动态映射GPIO寄存器组(物理地址->虚拟地址)
-    pXGPIO_Register = ioremap(XGPIO_Registerx_Base, sizeof(XGPIO_Register_Type));
+    //pXGPIO_Register = ioremap(XGPIO_Registerx_Base, sizeof(XGPIO_Register_Type));
     printk(KERN_INFO "XGPIO: XGPIO Register Sucess!\n");
     return 0;
 }
@@ -422,9 +460,7 @@ static void __exit XGPIO_Exit(void)
 {
     printk(KERN_INFO "XGPIO: XGPIO Begin Release.\n");
     //解除GPIO寄存器组映射
-    iounmap(pXGPIO_Register);
-    //解除ioctl的访问物理address的虚拟内存映射
-    iounmap(pioctl_address);
+    //iounmap(pXGPIO_Register);
     //释放虚拟内存中的空间
     release_mem_region(XGPIO_Registerx_Base,sizeof(XGPIO_Register_Type));
     //注销字符设备

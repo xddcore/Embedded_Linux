@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-12 10:17:41
  * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-15 00:36:57
+ * @LastEditTime: 2022-06-15 14:52:01
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO_APP.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
   }
   printf("Device File Open Sucess!\n");
   //GPIO2 ioctl访问
-
+  printf("APP send cmd to XGPIO Driver by ioctl\n");
   ioctl(fd, XGPIO_Registerx_Base+0x00, 1<<(3*2));//设置为输出模式
   printf("Set GPIO2 Direction: output\n");
   printf("GPIO2 Will Output 10 Pulse, 0.5duty\n");
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
   char * cmd4="{gpio3,gpio4|<inout,true>}";//设置为输出模式
   char * cmd5="{gpio3,gpio4|<setreset,true>}";//设置为高电平
   char * cmd6="{gpio3,gpio4|<setreset,false>}";//设置为低电平
-  printf("\n\nAPP send cmd to XGPIO Driver:%s\n",cmd1);
+  printf("\n\nAPP send cmd to XGPIO Driver by write:%s\n",cmd1);
   write(fd,cmd1,strlen(cmd1));
   for(i=0;i<10;i++)
   {
