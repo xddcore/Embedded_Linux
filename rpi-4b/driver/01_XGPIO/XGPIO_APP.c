@@ -2,9 +2,20 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-12 10:17:41
  * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-15 14:58:16
+ * @LastEditTime: 2022-06-15 16:06:15
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO_APP.c
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动 的APP
+ * 没用任何驱动框架，随便想着写的“野”驱动，
+ * 本质就是对底层硬件的访问。关于write和read的str匹配，我留了个结构体数组的实现思路，具体功能没实现。
+ * 抛砖引玉交给后来者发挥了。一想，这个坑我不填的话，应该也没人填了，于是乎把它填完
+ * 大概字符串匹配逻辑 就是 用户态 write 字符串“{gpio2|<inout,true>}" 实现将gpio2设置为输出（若true为输出的话）
+ * 同时支持多个gpio同时设置比如将gpio2和gpio3设置为输出模式。
+ * “{gpio2,gpio3|<inout,true>}”
+ * 还支持读取gpio端口电平
+ * 先write“{gpio2,gpio3|<pinlevel,true>}”
+ * 然后再去read ，会返回一个unsigned int(即GPLEV0寄存器的值)，请注意这个值不是实时的
+ * 每次更新值之前，请先write
+ * 
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,9 +69,10 @@ int main(int argc, char* argv[])
   char * cmd1="{gpio2|<inout,true>}";//设置为输出模式
   char * cmd2="{gpio2|<setreset,true>}";//设置为高电平
   char * cmd3="{gpio2|<setreset,false>}";//设置为低电平
-  char * cmd4="{gpio3,gpio4|<inout,true>}";//设置为输出模式
-  char * cmd5="{gpio3,gpio4|<setreset,true>}";//设置为高电平
-  char * cmd6="{gpio3,gpio4|<setreset,false>}";//设置为低电平
+  char * cmd4="{gpio2|<pinlevel,true>}";//读取GPLEV0寄存器
+  char * cmd5="{gpio3,gpio4|<inout,true>}";//设置为输出模式
+  char * cmd6="{gpio3,gpio4|<setreset,true>}";//设置为高电平
+  char * cmd7="{gpio3,gpio4|<setreset,false>}";//设置为低电平
   printf("\n\nAPP send cmd to XGPIO Driver |by write|:%s\n",cmd1);
   write(fd,cmd1,strlen(cmd1));
   for(i=0;i<10;i++)
