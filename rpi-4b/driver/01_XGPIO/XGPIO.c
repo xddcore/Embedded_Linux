@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-15 00:29:03
+ * @LastEditTime: 2022-06-15 13:57:57
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -281,6 +281,8 @@ void write_cmd_handler(char * cmd_str)
 //XGPIO输入/输出设置方法(1:out,0:input)
 int XGPIO_Operation_inout(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
 {
+    printk(KERN_INFO "XGPIO: DEBUG-p4-inout-pXGPIO_Register(%p)->GPFSEL0:(%p)|value(0x%x).\n", \
+    pXGPIO_Register,&(pXGPIO_Register->GPFSEL0),pXGPIO_Register->GPFSEL0);
     if(gpio_id<=9&&gpio_id>=0)
     {
         pXGPIO_Register->GPFSEL0=(operation_id<<(gpio_id*3));
@@ -305,6 +307,8 @@ int XGPIO_Operation_pullupdown(unsigned int gpio_id,unsigned int operation_id, u
 //XGPIO电平设置设置方法
 int XGPIO_Operation_setreset(unsigned int gpio_id,unsigned int operation_id, unsigned int *result)
 {
+    printk(KERN_INFO "XGPIO: DEBUG-p4-setreset-pXGPIO_Register(%p)->GPSET0:(%p)|value(0x%x).\n", \
+    pXGPIO_Register,&(pXGPIO_Register->GPSET0),pXGPIO_Register->GPSET0);
     if(operation_id)//1:high level
     {
         pXGPIO_Register->GPSET0=(1<<(gpio_id*1));//1:enable
