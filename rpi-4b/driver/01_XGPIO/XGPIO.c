@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-18 08:59:39
+ * @LastEditTime: 2022-06-18 09:03:44
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -462,7 +462,6 @@ ssize_t XGPIO_Read(struct file* filp, char __user* buf, size_t len, loff_t* off)
   }
   *off = 0; // 每次控制之后，文件索引都回到开始
   printk(KERN_INFO "XGPIO: DEBUG-p8.\n");
-  printk(KERN_INFO "XGPIO: DEBUG-p9.\n");
   return 0;
 }
 /**************************************************************/
@@ -471,7 +470,7 @@ static const struct file_operations module_fops={
     .open = NULL,
     .release = NULL,
     .write = XGPIO_Write,
-    .read = NULL,
+    .read = XGPIO_Read,
     .unlocked_ioctl = XGPIO_IOCTL,//XGPIO_IOCTL, echo "xxx" > 会来到这里
 };
 
