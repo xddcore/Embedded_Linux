@@ -1,8 +1,8 @@
 /*
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
- * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-18 08:46:50
+ * @LastEditors: xddcore 1034029664@qq.com
+ * @LastEditTime: 2022-06-18 15:49:35
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -99,9 +99,9 @@ typedef struct{
     volatile unsigned int GPAFEN1;
     /*GPIO Pull-up/Pull-down Register 0-3*/
     volatile unsigned int GPIO_PUP_PDN_CNTRL_REG0;
-    volatile unsigned int GPIO_PIP_PDN_CNTRL_REG1;
-    volatile unsigned int GPIO_PIP_PDN_CNTRL_REG2;
-    volatile unsigned int GPIO_PIP_PDN_CNTRL_REG3;
+    volatile unsigned int GPIO_PUP_PDN_CNTRL_REG1;
+    volatile unsigned int GPIO_PUP_PDN_CNTRL_REG2;
+    volatile unsigned int GPIO_PUP_PDN_CNTRL_REG3;
 }XGPIO_Register_Type;
 
 XGPIO_Register_Type *pXGPIO_Register;//pXGPIO_Register的指针
@@ -345,14 +345,14 @@ int XGPIO_Operation_pullupdown(unsigned int gpio_id,unsigned int operation_id, u
     if(gpio_id>=0&&gpio_id<=15)//
     {
         pullupdown_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPIO_PUP_PDN_CNTRL_REG0_Offset,4);
-        XGPIO_Register.GPIO_PIP_PDN_CNTRL_REG0|=operation_id<<(gpio_id*2);
-        iowrite32(XGPIO_Register.GPIO_PIP_PDN_CNTRL_REG0,pullupdown_address);
+        XGPIO_Register.GPIO_PUP_PDN_CNTRL_REG0|=operation_id<<(gpio_id*2);
+        iowrite32(XGPIO_Register.GPIO_PUP_PDN_CNTRL_REG0,pullupdown_address);
     }
     else
     {
         pullupdown_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPIO_PUP_PDN_CNTRL_REG1_Offset,4);
-        XGPIO_Register.GPIO_PIP_PDN_CNTRL_REG1|=operation_id<<(gpio_id*2);
-        iowrite32(XGPIO_Register.GPIO_PIP_PDN_CNTRL_REG1,pullupdown_address);
+        XGPIO_Register.GPIO_PUP_PDN_CNTRL_REG1|=operation_id<<(gpio_id*2);
+        iowrite32(XGPIO_Register.GPIO_PUP_PDN_CNTRL_REG1,pullupdown_address);
     }
     printk(KERN_INFO "XGPIO: XGPIO_Operation_pullupdown <gpio%d,operation:%d>!\n",gpio_id,operation_id);
     //解除inout_address的访问物理address的虚拟内存映射
