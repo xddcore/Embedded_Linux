@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-12 10:17:41
  * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-18 08:23:49
+ * @LastEditTime: 2022-06-18 08:34:19
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO_APP.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动 的APP
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -87,9 +87,9 @@ int main(int argc, char* argv[])
   for(i=0;i<10;i++)
   {
     printf("APP send cmd to XGPIO Driver |by write|:%s\n",cmd4);
-    //write(fd,cmd4,strlen(cmd4));//更新GPLEV0寄存器(可以读取GPIO0-31的电平状态)
+    write(fd,cmd4,strlen(cmd4));//更新GPLEV0寄存器(可以读取GPIO0-31的电平状态)
     printf("APP read GPLEV0 from XGPIO Driver |by read|\n");
-    //read(fd,pGPLEV0,4);//读取一个4个 bytes(char)基类型的长度
+    read(fd,pGPLEV0,4);//读取一个4个 bytes(char)基类型的长度
     printf("GPLEV0 = 0x%x\n",GPLEV0);
 
     printf("APP send cmd to XGPIO Driver |by write|:%s\n",cmd2);
