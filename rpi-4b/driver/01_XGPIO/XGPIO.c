@@ -1,8 +1,8 @@
 /*
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
- * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-18 15:49:35
+ * @LastEditors: Chengsen Dong 1034029664@qq.com
+ * @LastEditTime: 2022-06-18 08:59:39
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -393,7 +393,7 @@ int XGPIO_Operation_pinlevel(unsigned int gpio_id,unsigned int operation_id, uns
     pinlevel_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPLEV0_Offset,4);
     *result=ioread32(pinlevel_address);
     printk(KERN_INFO "XGPIO: XGPIO_Operation_pinlevel <gpio%d,operation:%d>!\n \
-    Please use read(len=1) to get GPLEV0 register value\n",gpio_id,operation_id);
+      Please use read(len=1) to get GPLEV0 register value\n",gpio_id,operation_id);
     return 0;
 }
 //XGPIODEBUG(打印所有GPIO寄存器)方法
@@ -455,11 +455,12 @@ ssize_t XGPIO_Read(struct file* filp, char __user* buf, size_t len, loff_t* off)
 {
   int rc = 0;
   printk(KERN_INFO "XGPIO: DEBUG-p7.\n");
+  printk(KERN_INFO "XGPIO: DEBUG-p7.1 operation_result = 0x%x\n",*poperation_result);
   rc = copy_to_user(buf, (char *)poperation_result, len);//无论应用想读多长，只能读4bytes,应用层的len应该=1
   if (rc < 0) {
     return rc;
   }
-  //*off = 0; // 每次控制之后，文件索引都回到开始
+  *off = 0; // 每次控制之后，文件索引都回到开始
   printk(KERN_INFO "XGPIO: DEBUG-p8.\n");
   printk(KERN_INFO "XGPIO: DEBUG-p9.\n");
   return 0;
