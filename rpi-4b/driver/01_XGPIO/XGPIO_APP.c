@@ -1,8 +1,8 @@
 /*
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-12 10:17:41
- * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-15 16:06:15
+ * @LastEditors: Chengsen Dong 1034029664@qq.com
+ * @LastEditTime: 2022-06-18 07:56:00
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO_APP.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动 的APP
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -23,6 +23,9 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <string.h>
+
+unsigned int GPLEV0 = 0;
+unsigned int *pGPLEV0 = &GPLEV0;
 
 #define XGPIO_Registerx_Base 0xfe200000 //GPIO寄存器组基地址
 /******************GPIO功能选择寄存器*******************/
@@ -66,17 +69,26 @@ int main(int argc, char* argv[])
     ioctl(fd, XGPIO_Registerx_Base+XGPIO_Registerx_GPCLR0_Offset, 1<<(1*2));//设置为低电平
     sleep(1);
   }
-  char * cmd1="{gpio2|<inout,true>}";//设置为输出模式
-  char * cmd2="{gpio2|<setreset,true>}";//设置为高电平
-  char * cmd3="{gpio2|<setreset,false>}";//设置为低电平
-  char * cmd4="{gpio2|<pinlevel,true>}";//读取GPLEV0寄存器
-  char * cmd5="{gpio3,gpio4|<inout,true>}";//设置为输出模式
-  char * cmd6="{gpio3,gpio4|<setreset,true>}";//设置为高电平
-  char * cmd7="{gpio3,gpio4|<setreset,false>}";//设置为低电平
+  char * cmd1="{gpio2|<inout,true>}";//GPIO2设置为输出模式
+  char * cmd2="{gpio2|<setreset,true>}";//GPIO2设置为高电平
+  char * cmd3="{gpio2|<setreset,false>}";//GPIO2设置为低电平
+  char * cmd4="{gpio2|<pinlevel,true>}";//更新GPLEV0寄存器(可以读取GPIO0-31的电平状态)
+  char * cmd5="{gpio3,gpio4|<inout,false>}";//GPIO3，GPIO4设置为输入模式
+  char * cmd6="{gpio5|<inout,true>}";//GPIO5设置为输出模式
+  char * cmd7="{gpio5|<setreset,true>}";//GPIO5设置为高电平
+  char * cmd8="{gpio5|<setreset,false>}";//GPIO5设置为低电平
   printf("\n\nAPP send cmd to XGPIO Driver |by write|:%s\n",cmd1);
-  write(fd,cmd1,strlen(cmd1));
+  write(fd,cmd1,strlen(cmd1));//GPIO2设置为输出模式
+  write(fd,cmd5,strlen(cmd5));//GPIO3，GPIO4设置为输入模式
+  write(fd,cmd6,strlen(cmd6));//GPIO5设置为输出模式
   for(i=0;i<10;i++)
   {
+    printf("APP send cmd to XGPIO Driver |by write|:%s\n",cmd4);
+    write(fd,cmd4,strlen(cmd4));//更新GPLEV0寄存器(可以读取GPIO0-31的电平状态)
+    printf("APP read GPLEV0 from XGPIO Driver |by read|\n");
+    read(fd,pGPLEV0,1);//读取一个1个基类型的长度
+    printf("GPLEV0 = 0x%x\n",GPLEV0);
+    
     printf("APP send cmd to XGPIO Driver |by write|:%s\n",cmd2);
     write(fd,cmd2,strlen(cmd2));
     //ioctl(fd, XGPIO_Registerx_Base+0x1c, 1<<(1*2));//设置为高电平
