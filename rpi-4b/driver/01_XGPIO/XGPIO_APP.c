@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-12 10:17:41
  * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-18 08:23:49
+ * @LastEditTime: 2022-06-18 08:38:41
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO_APP.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动 的APP
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -84,6 +84,7 @@ int main(int argc, char* argv[])
   write(fd,cmd1,strlen(cmd1));//GPIO2设置为输出模式
   write(fd,cmd5,strlen(cmd5));//GPIO3，GPIO4设置为输入模式
   write(fd,cmd6,strlen(cmd6));//GPIO5设置为输出模式
+  write(fd,cmd1,strlen(cmd1));//GPIO2设置为输出模式
   for(i=0;i<10;i++)
   {
     printf("APP send cmd to XGPIO Driver |by write|:%s\n",cmd4);
