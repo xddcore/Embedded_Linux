@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-18 08:17:27
+ * @LastEditTime: 2022-06-18 08:46:50
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -105,7 +105,7 @@ typedef struct{
 }XGPIO_Register_Type;
 
 XGPIO_Register_Type *pXGPIO_Register;//pXGPIO_Register的指针
-
+XGPIO_Register_Type XGPIO_Register ={0};//实现对每个GPIO的单独控制，防止影响其他
 
 
 //操作id号
@@ -312,19 +312,22 @@ int XGPIO_Operation_inout(unsigned int gpio_id,unsigned int operation_id, unsign
     {
         //pXGPIO_Register->GPFSEL0=(operation_id<<(gpio_id*3));
         inout_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPFSEL0_Offset,4);
-        iowrite32(operation_id<<(gpio_id*3),inout_address);
+        XGPIO_Register.GPFSEL0|=operation_id<<(gpio_id*3);
+        iowrite32(XGPIO_Register.GPFSEL0,inout_address);
     }
     else if(gpio_id<=19&&gpio_id>=10)
     {
         //pXGPIO_Register->GPFSEL1=(operation_id<<(gpio_id*3));
         inout_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPFSEL1_Offset,4);
-        iowrite32(operation_id<<(gpio_id*3),inout_address);
+        XGPIO_Register.GPFSEL1|=operation_id<<(gpio_id*3);
+        iowrite32(XGPIO_Register.GPFSEL1,inout_address);
     }
     else if(gpio_id<=29&&gpio_id>=20)
     {
         //pXGPIO_Register->GPFSEL2=(operation_id<<(gpio_id*3));
         inout_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPFSEL2_Offset,4);
-        iowrite32(operation_id<<(gpio_id*3),inout_address);
+        XGPIO_Register.GPFSEL2|=operation_id<<(gpio_id*3);
+        iowrite32(XGPIO_Register.GPFSEL2,inout_address);
     }
     /*printk(KERN_INFO "XGPIO: DEBUG-p4-inout-pXGPIO_Register(%p)->GPFSEL0:(%p)|value(0x%x).\n", \
     pXGPIO_Register,&(pXGPIO_Register->GPFSEL0),pXGPIO_Register->GPFSEL0);*/
@@ -342,12 +345,14 @@ int XGPIO_Operation_pullupdown(unsigned int gpio_id,unsigned int operation_id, u
     if(gpio_id>=0&&gpio_id<=15)//
     {
         pullupdown_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPIO_PUP_PDN_CNTRL_REG0_Offset,4);
-        iowrite32(operation_id<<(gpio_id*2),pullupdown_address);
+        XGPIO_Register.GPIO_PIP_PDN_CNTRL_REG0|=operation_id<<(gpio_id*2);
+        iowrite32(XGPIO_Register.GPIO_PIP_PDN_CNTRL_REG0,pullupdown_address);
     }
     else
     {
-        pullupdown_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPIO_PUP_PDN_CNTRL_REG0_Offset,4);
-        iowrite32(operation_id<<(gpio_id*2),pullupdown_address);
+        pullupdown_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPIO_PUP_PDN_CNTRL_REG1_Offset,4);
+        XGPIO_Register.GPIO_PIP_PDN_CNTRL_REG1|=operation_id<<(gpio_id*2);
+        iowrite32(XGPIO_Register.GPIO_PIP_PDN_CNTRL_REG1,pullupdown_address);
     }
     printk(KERN_INFO "XGPIO: XGPIO_Operation_pullupdown <gpio%d,operation:%d>!\n",gpio_id,operation_id);
     //解除inout_address的访问物理address的虚拟内存映射
@@ -362,13 +367,15 @@ int XGPIO_Operation_setreset(unsigned int gpio_id,unsigned int operation_id, uns
     {
         //pXGPIO_Register->GPSET0=(1<<(gpio_id*1));//1:enable
         setreset_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPSET0_Offset,4);
-        iowrite32(1<<(gpio_id*1),setreset_address);
+        XGPIO_Register.GPSET0|=1<<(gpio_id*1);
+        iowrite32(XGPIO_Register.GPSET0,setreset_address);
     }
     else
     {
         //pXGPIO_Register->GPCLR0=(1<<(gpio_id*1));//1:enable
         setreset_address = ioremap(XGPIO_Registerx_Base+XGPIO_Registerx_GPCLR0_Offset,4);
-        iowrite32(1<<(gpio_id*1),setreset_address);
+        XGPIO_Register.GPCLR0|=1<<(gpio_id*1);
+        iowrite32(XGPIO_Register.GPCLR0,setreset_address);
     }
     printk(KERN_INFO "XGPIO: XGPIO_Operation_setreset <gpio%d,operation:%d>!\n",gpio_id,operation_id);
     /*printk(KERN_INFO "XGPIO: DEBUG-p5-setreset-pXGPIO_Register(%p)->GPSET0:(%p)|value(0x%x).\n", \
