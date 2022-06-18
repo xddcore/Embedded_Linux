@@ -1,8 +1,8 @@
 /*
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
- * @LastEditors: xddcore 1034029664@qq.com
- * @LastEditTime: 2022-06-15 15:57:18
+ * @LastEditors: Chengsen Dong 1034029664@qq.com
+ * @LastEditTime: 2022-06-18 08:17:27
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -448,7 +448,7 @@ ssize_t XGPIO_Read(struct file* filp, char __user* buf, size_t len, loff_t* off)
 {
   int rc = 0;
   printk(KERN_INFO "XGPIO: DEBUG-p7.\n");
-  rc = copy_to_user(buf, poperation_result, len);//无论应用想读多长，只能读4bytes,应用层的len应该=1
+  rc = copy_to_user(buf, (char *)poperation_result, len);//无论应用想读多长，只能读4bytes,应用层的len应该=1
   if (rc < 0) {
     return rc;
   }
