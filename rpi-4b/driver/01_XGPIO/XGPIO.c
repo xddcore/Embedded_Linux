@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2022-06-11 11:23:49
  * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2022-06-18 09:03:44
+ * @LastEditTime: 2022-06-22 10:04:55
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/XGPIO.c
  * @Description: XGPIO 树莓派4b BCM2711 GPIO Linux驱动
  * 没用任何驱动框架，随便想着写的“野”驱动，
@@ -194,7 +194,7 @@ unsigned int *poperation_result = &operation_result;
 /**************************************************************/
 /***********************Write 命令解析**************************/
 /*Write命令解析函数*/
-void write_cmd_handler(char * cmd_str)
+void write_cmd_handler(const char *cmd_str)
 {
     const char cmd_head_chr = '{';
     const char cmd_end_chr = '}';
@@ -416,7 +416,7 @@ int XGPIO_ioctl(unsigned int address, unsigned long value)
     if(!(address>=XGPIO_Registerx_Base && address <=(XGPIO_Registerx_Base+0xf0)))
     {
         //确保安全，只能在GPIO范围内乱写
-        return 1;//访问超出GPIO物理地址区域，错误
+        return -1;//访问超出GPIO物理地址区域，错误
     }
     pioctl_address = ioremap(address,sizeof(address));
     iowrite32(value,pioctl_address);
@@ -456,11 +456,11 @@ ssize_t XGPIO_Read(struct file* filp, char __user* buf, size_t len, loff_t* off)
   int rc = 0;
   printk(KERN_INFO "XGPIO: DEBUG-p7.\n");
   printk(KERN_INFO "XGPIO: DEBUG-p7.1 operation_result = 0x%x\n",*poperation_result);
-  rc = copy_to_user(buf, (char *)poperation_result, len);//无论应用想读多长，只能读4bytes,应用层的len应该=1
+  rc = copy_to_user(buf, (char *)poperation_result, len);//无论应用想读多长，只能读4bytes,应用层的len应该=4
   if (rc < 0) {
     return rc;
   }
-  *off = 0; // 每次控制之后，文件索引都回到开始
+  //*off = 0; // 每次控制之后，文件索引都回到开始
   printk(KERN_INFO "XGPIO: DEBUG-p8.\n");
   return 0;
 }
