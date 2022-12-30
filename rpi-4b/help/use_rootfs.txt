@@ -1,2 +1,0 @@
-在rootfs目录下执行，以下的空文件夹无法上传至github，但这些空文件夹是vfs的挂载点，比较重要
-mkdir  dev  etc  home  lib   mnt  proc  root   sys  tmp   var -p
