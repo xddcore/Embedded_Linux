@@ -1,25 +1,48 @@
-/*
- * @Author: Chengsen Dong 1034029664@qq.com
- * @Date: 2023-01-06 21:42:49
- * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2023-01-06 21:43:43
- * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/C_WiringPi_GPIO_Lib.c
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+
+ * blink.c:
+ *	Standard "blink" program in wiringPi. Blinks an LED connected
+ *	to the first GPIO pin.
+ *
+ * Copyright (c) 2012-2013 Gordon Henderson.
+ ***********************************************************************
+ * This file is part of wiringPi:
+ *      https://github.com/WiringPi/WiringPi
+ *
+ *    wiringPi is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU Lesser General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    wiringPi is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU Lesser General Public License for more details.
+ *
+ *    You should have received a copy of the GNU Lesser General Public License
+ *    along with wiringPi.  If not, see <http://www.gnu.org/licenses/>.
+ ***********************************************************************
  */
+
+#include <stdio.h>
 #include <wiringPi.h>
 
-int main(void) {
+// LED Pin - wiringPi pin 0 is BCM_GPIO 17.
 
-wiringPiSetup();
+#define	LED	0
 
-pinMode (8, OUTPUT); //BCM2 -> wiringpi 8
+int main (void)
+{
+  printf ("Raspberry Pi blink\n") ;
 
-for(;;) {
+  wiringPiSetup () ;
+  pinMode (LED, OUTPUT) ;
 
-digitalWrite(8, HIGH);
-
-digitalWrite(8, LOW);
-
-}
-
+  for (;;)
+  {
+    digitalWrite (LED, HIGH) ;	// On
+    delay (500) ;		// mS
+    digitalWrite (LED, LOW) ;	// Off
+    delay (500) ;
+  }
+  return 0 ;
 }
