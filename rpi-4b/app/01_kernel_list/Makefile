@@ -1,4 +1,4 @@
 all:
-	gcc -o main main.c
+	aarch64-linux-gnu-gcc -o main main.c
 clean:
 	$(RM) main *.o
