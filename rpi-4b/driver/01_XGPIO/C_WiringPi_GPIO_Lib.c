@@ -1,4 +1,4 @@
-
+/*
  * blink.c:
  *	Standard "blink" program in wiringPi. Blinks an LED connected
  *	to the first GPIO pin.
@@ -23,16 +23,17 @@
  ***********************************************************************
  */
 
-#include <stdio.h>
+//Note from xdd: gcc编译时 -l wiringPi
+//#include <stdio.h>
 #include <wiringPi.h>
 
-// LED Pin - wiringPi pin 0 is BCM_GPIO 17.
+// LED Pin - wiringPi pin 8 is BCM_GPIO 2.
 
-#define	LED	0
+#define	LED	8
 
 int main (void)
 {
-  printf ("Raspberry Pi blink\n") ;
+  //printf ("Raspberry Pi blink\n") ;
 
   wiringPiSetup () ;
   pinMode (LED, OUTPUT) ;
@@ -40,9 +41,9 @@ int main (void)
   for (;;)
   {
     digitalWrite (LED, HIGH) ;	// On
-    delay (500) ;		// mS
+    //delay (500) ;		// mS
     digitalWrite (LED, LOW) ;	// Off
-    delay (500) ;
+    //delay (500) ;
   }
   return 0 ;
 }

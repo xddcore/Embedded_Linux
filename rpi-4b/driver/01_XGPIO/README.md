@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2023-01-06 20:29:54
  * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2023-01-06 21:53:32
+ * @LastEditTime: 2023-01-06 22:07:13
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/README.md
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -24,7 +24,7 @@
 |  ----  | ----  |
 | XGPIO  | 147kHz |
 | python库`RPi.GPIO` | 900kHz |
-| C库`wiringPi` |  |
+| C库`wiringPi` | 34.6Mhz(已失真为正弦波) |
 
 
 > Note: wiringPi:https://github.com/WiringPi/WiringPi/releases/tag/2.61-1
