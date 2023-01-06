@@ -18,6 +18,7 @@ GITHUB_ROOTDIR=/home/xdd/xddcore/Embedded_Linux
 all:
 	make $(CROSS) -C $(KERNEL_DIR) M=`pwd` modules
 	aarch64-linux-gnu-gcc XGPIO_APP.c -o $(APP_NAME)
+	aarch64-linux-gnu-gcc XGPIO_APP_Performance.c -o XGPIO_APP_Performance
 	echo $(MODULE_DIR)
 	cd $(GITHUB_DIR) && mkdir -p $(MODULE_DIR) 
 	cp `pwd`/$(MODULE_NAME).ko  $(GITHUB_DIR)/$(MODULE_DIR)
@@ -25,11 +26,14 @@ all:
 	cp `pwd`/$(MODULE_NAME).o  $(GITHUB_DIR)/$(MODULE_DIR)
 	cp `pwd`/$(APP_NAME)  $(GITHUB_DIR)/$(MODULE_DIR)
 	cp `pwd`/$(APP_NAME).c  $(GITHUB_DIR)/$(MODULE_DIR)
+	cp `pwd`/XGPIO_APP_Performance  $(GITHUB_DIR)/$(MODULE_DIR)
+	cp `pwd`/XGPIO_APP_Performance.c  $(GITHUB_DIR)/$(MODULE_DIR)
 	cp `pwd`/Makefile  $(GITHUB_DIR)/$(MODULE_DIR)
 
 cpfromgit:
 	cp $(GITHUB_DIR)/$(strip $(MODULE_DIR))/$(MODULE_NAME).c `pwd`
 	cp $(GITHUB_DIR)/$(strip $(MODULE_DIR))/$(APP_NAME).c `pwd`
+	cp $(GITHUB_DIR)/$(strip $(MODULE_DIR))/XGPIO_APP_Performance.c `pwd`
 
 gitpull:
 	cd $(GITHUB_ROOTDIR) && git pull
