@@ -23,7 +23,7 @@
  ***********************************************************************
  */
 
-//Note from xdd: gcc编译时 -l wiringPi
+//Note from xdd: gcc编译时 -l wiringPi 23.1.6
 //#include <stdio.h>
 #include <wiringPi.h>
 
