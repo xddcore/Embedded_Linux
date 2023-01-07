@@ -2,7 +2,7 @@
  * @Author: Chengsen Dong 1034029664@qq.com
  * @Date: 2023-01-06 20:29:54
  * @LastEditors: Chengsen Dong 1034029664@qq.com
- * @LastEditTime: 2023-01-06 22:07:13
+ * @LastEditTime: 2023-01-07 12:32:47
  * @FilePath: /Embedded_Linux/rpi-4b/driver/01_XGPIO/README.md
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -22,7 +22,9 @@
 
 |  库  | 最大GPIO翻转频率  |
 |  ----  | ----  |
-| XGPIO  | 147kHz |
+| XGPIO(ioctl)  | 147kHz |
+| XGPIO(uio)  |  |
+| XGPIO(套接字)  |  |
 | python库`RPi.GPIO` | 900kHz |
 | C库`wiringPi` | 34.6Mhz(已失真为正弦波) |
 
